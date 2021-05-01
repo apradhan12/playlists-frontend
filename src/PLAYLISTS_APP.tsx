@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import {Button, Container, Modal} from 'react-bootstrap';
-import {HashRouter as Router, Route} from 'react-router-dom'
+import {BrowserRouter as Router, Route} from 'react-router-dom'
 import CustomNavbar from './common/components/CustomNavbar';
 
 import Homepage from './pages/homepage';
@@ -14,6 +14,7 @@ import ManageAdmin from './pages/manageadministrators';
 import { User } from './common/types';
 import { Form } from 'react-bootstrap';
 import { userMap } from './common/data';
+import Callback from "./pages/callback";
 
 
 interface State {
@@ -129,6 +130,8 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
 
                         {/* Route to Manage admins page */}
                         <Route path="/playlist/:playlistId/admins" component={ManageAdmin} exact/>
+
+                        <Route path="/callback" component={Callback} exact />
                     </Router>
 
                     <Modal show={this.state.showHide} animation={false} backdrop="static" dialogClassName="museo-300">

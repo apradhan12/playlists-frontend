@@ -11,11 +11,6 @@ interface State {
     playlists?: Playlist[];
 }
 
-interface Params {
-    access_token: string;
-    refresh_token: string;
-}
-
 interface SpotifyImage {
     height: number;
     width: number;
@@ -53,22 +48,31 @@ interface SpotifyPlaylistTracks {
     "total": number;
 }
 
+interface Params {
+    access_token: string;
+    refresh_token: string;
+}
+
 class Homepage extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
             playlists: undefined
         };
-        if (window.location.search !== "") {
-            // @ts-ignore
-            const queryParams: Params = window.location.search.slice(1).split("&").reduce(
-                (accumulator, currentValue) => {
-                    const pair = currentValue.split("=");
-                    return {...accumulator, [pair[0]]: pair[1]}
-                }, {});
+    }
+
+    componentDidMount() {
+        const accessToken = localStorage.getItem("sp-accessToken");
+        if (accessToken !== null) {
+            // // @ts-ignore
+            // const queryParams: Params = window.location.search.slice(1).split("&").reduce(
+            //     (accumulator, currentValue) => {
+            //         const pair = currentValue.split("=");
+            //         return {...accumulator, [pair[0]]: pair[1]}
+            //     }, {});
             axios.get("https://api.spotify.com/v1/me/playlists", {
                 headers: {
-                    'Authorization': 'Bearer ' + queryParams.access_token
+                    'Authorization': 'Bearer ' + accessToken
                 }
             }).then(response => {
                 const playlists: Playlist[] = response.data.items;

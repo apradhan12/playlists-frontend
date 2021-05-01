@@ -30,11 +30,10 @@ export default class CustomNavbar extends React.Component<CustomNavbarProps, Cus
         })
     }
 
-
     render() {
         return (
             <Navbar style={{backgroundColor: "#6eaedd"}} variant="dark" className="museo-300">
-                <Navbar.Brand href="#">
+                <Navbar.Brand href="/">
                     <p className="museo-display-black m-0">Spotify Collaborative Playlists</p>
                 </Navbar.Brand>
                 <Nav className="mr-auto">
@@ -43,9 +42,10 @@ export default class CustomNavbar extends React.Component<CustomNavbarProps, Cus
                 {
                     this.props.user ?
                         <>
-                            <Navbar.Text >
+                            <Navbar.Text>
                                 Logged in as
-                                <Nav.Link className="d-inline p-0 ml-2" href={`#/user/${this.props.user.username}`} style={{textDecorationLine: "underline"}} >
+                                <Nav.Link className="d-inline p-0 ml-2" href={`#/user/${this.props.user.username}`}
+                                          style={{textDecorationLine: "underline"}}>
                                 <span>
                                     {this.props.user.displayName}
                                     <Image fluid src={process.env.PUBLIC_URL + this.props.user.profilePictureURL}
@@ -53,11 +53,18 @@ export default class CustomNavbar extends React.Component<CustomNavbarProps, Cus
                                 </span>
                                 </Nav.Link>
                             </Navbar.Text>
-                            <Button variant="light" className="ml-5" onClick={() => window.location.reload()}>Log out</Button>
+                            <Button variant="light" className="ml-5" onClick={() => window.location.reload()}>Log
+                                out</Button>
                         </> :
-                        <Button variant="light" onClick={this.props.toggleLoginModal()}>
-                            Log in with Spotify
-                        </Button>
+                        <>
+                            <Button variant="light" onClick={this.props.toggleLoginModal()}>
+                                Fake login
+                            </Button>
+                            <Button variant="light"
+                                    onClick={() => window.open('http://localhost:8888/login', "login", "height=600,width=600")}>
+                                Log in with Spotify
+                            </Button>
+                        </>
                 }
             </Navbar>
         )
