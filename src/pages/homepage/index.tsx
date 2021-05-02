@@ -97,27 +97,30 @@ class Homepage extends React.Component<Props, State> {
                 </Row>
                 <Row>
                     <Col>
-                        <h1>Your Playlists</h1>
-                        {this.state.playlists && this.state.playlists.map(playlist => (
-                            <Col xs="3" style={{padding: ".5em"}} key={playlist.id}>
-                                <Link to={`/playlist/${playlist.id}`}>
-                                    <div style={{boxShadow: "1px 1px 10px gray", padding: ".75em", borderRadius: "10px", height: "100%"}}>
-                                        <Image className="mb-3" fluid src={playlist.images[0].url} />
-                                        <p className="mb-1 museo-700">{playlist.name}</p>
-                                        <p className="mb-1">{playlist.owner.display_name}</p>
-                                        <p className="mb-1">{playlist.tracks.total} {playlist.tracks.total === 1 ? "song" : "songs"}</p>
-                                    </div>
-                                </Link>
-                            </Col>
-                            ))}
+                        <h3 className="museo-display-light mb-1">Your Playlists</h3>
+                        <hr style={{border: "1px solid lightgrey"}} />
                     </Col>
                 </Row>
                 <Row>
+                    {this.state.playlists && this.state.playlists.map(playlist => (
+                        <Col xs="3" style={{padding: ".5em"}} key={playlist.id}>
+                            <Link to={`/playlist/${playlist.id}`}>
+                                <div style={{boxShadow: "1px 1px 10px gray", padding: ".75em", borderRadius: "10px", height: "100%"}}>
+                                    <Image className="mb-3" fluid src={playlist.images[0].url} />
+                                    <p className="mb-1 museo-700">{playlist.name}</p>
+                                    <p className="mb-1">{playlist.owner.display_name}</p>
+                                    <p className="mb-1">{playlist.tracks.total} {playlist.tracks.total === 1 ? "song" : "songs"}</p>
+                                </div>
+                            </Link>
+                        </Col>
+                        ))}
+                </Row>
+                <Row>
                     <Col xs={12}>
-                        <h3 className="museo-display-light mb-1">
+                        <h3 className="museo-display-light mb-1 mt-3">
                             Recommended Playlists
                         </h3>
-                        <hr style={{border: "1px solid lightgrey"}} className="mb-4"/>
+                        <hr style={{border: "1px solid lightgrey"}} />
                     </Col>
                 </Row>
                 <Row>
