@@ -57,9 +57,6 @@ export default class CustomNavbar extends React.Component<CustomNavbarProps, Cus
                                 out</Button>
                         </> :
                         <>
-                            <Button variant="light" onClick={this.props.toggleLoginModal()}>
-                                Fake login
-                            </Button>
                             <Button variant="light"
                                     onClick={() => window.open('http://localhost:8888/login', "login", "height=600,width=600")}>
                                 Log in with Spotify
