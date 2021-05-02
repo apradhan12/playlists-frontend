@@ -5,7 +5,6 @@ import {secondsToHoursString, secondsToMinutesString, sum} from "../../common/ut
 import {Link} from "react-router-dom";
 import {useHistory} from "react-router";
 import axios from "axios";
-import {Song} from "../../common/types";
 
 interface Props {
     match: {
@@ -32,6 +31,15 @@ interface User {
     username: string; // unique
     displayName: string;
     [otherOptions: string]: any;
+}
+
+interface Song {
+    id: string;
+    title: string;
+    artist: string;
+    album: string;
+    duration: number;
+    addedAt?: string;
 }
 
 export default function PlaylistPage(props: Props) {
@@ -78,8 +86,10 @@ export default function PlaylistPage(props: Props) {
                             title: item.track.name,
                             artist: item.track.artists.map((artist: any) => artist.name).join(", "),
                             album: item.track.album.name,
-                            duration: Math.floor(item.track.duration_ms / 1000)
+                            duration: Math.floor(item.track.duration_ms / 1000),
+                            addedAt: item.added_at
                         }));
+                        // TODO: use milliseconds for duration (more accurate)
                     }
 
                     function addSongs(tracks: any) {
@@ -116,6 +126,16 @@ export default function PlaylistPage(props: Props) {
         pathname: `/playlist/${props.match.params.playlistId}/requests`,
         state: {showRemoveSong: true}
     });
+
+    function convertDate(date?: string) {
+        if (date === undefined) {
+            return "2021-03-30";
+        }
+        const parsedDate = new Date(date);
+        const paddedMonth = (parsedDate.getMonth() + 1).toString().padStart(2, "0");
+        const paddedDate = parsedDate.getDate().toString().padStart(2, "0");
+        return `${parsedDate.getFullYear()}-${paddedMonth}-${paddedDate}`;
+    }
 
     return (
         <Container>
@@ -199,7 +219,7 @@ export default function PlaylistPage(props: Props) {
                                     <td>{song.title}</td>
                                     <td>{song.artist}</td>
                                     <td>{song.album}</td>
-                                    <td>2021-03-30</td>
+                                    <td>{convertDate(song.addedAt)}</td>
                                     <td>{secondsToMinutesString(song.duration)}</td>
                                 </tr>
                             ))
