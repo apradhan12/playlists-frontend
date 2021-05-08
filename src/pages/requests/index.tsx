@@ -3,19 +3,20 @@ import { Alert, Button, Col, Container, Form, FormControl, Modal, Row, Table } f
 import { Link } from "react-router-dom";
 import { playlistMap, songMap, userMap } from "../../common/data";
 import { secondsToMinutesString } from "../../common/utils";
-import { SongRequest } from "../../common/types";
 import "./style.css";
 import { ChangeEvent } from 'react';
-import { Playlist } from '../../common/types';
+import axios from "axios";
 
 interface RequestsTableProps {
     requests: SongRequest[];
     adminPermissions: boolean;
-    handleAcceptRequest: (songId: string, requestId: string) => () => void;
-    removeVote: (requestId: string) => () => void;
-    addVote: (requestId: string) => () => void;
+    handleAcceptRequest: (requestId: number) => () => void;
+    removeVote: (requestId: number) => () => void;
+    addVote: (requestId: number) => () => void;
     loggedInUsername?: string;
     toggleLoginModal: (callback?: () => void) => () => void;
+
+    areYouAdmin?: boolean;
 }
 
 class RequestsTable extends Component<RequestsTableProps> {
@@ -37,24 +38,24 @@ class RequestsTable extends Component<RequestsTableProps> {
                 <tbody>
                     {
                         Array.from(this.props.requests.entries()).map(([i, request]) => (
-                            <tr key={request.id}>
+                            <tr key={request.requestId}>
                                 <td>{i + 1}</td>
-                                <td>{request.song.title}</td>
-                                <td>{request.song.artist}</td>
-                                <td>{request.song.album}</td>
+                                <td>{request.title}</td>
+                                <td>{request.artist}</td>
+                                <td>{request.album}</td>
                                 <td>2021-03-30</td>
-                                <td>{secondsToMinutesString(request.song.duration)}</td>
-                                <td>{request.usersVoted.length}</td>
+                                <td>{secondsToMinutesString(Math.floor(request.duration / 1000))}</td>
+                                <td>{request.numVotes}</td>
                                 <td>
-                                    {this.props.adminPermissions ? <Button variant="primary"
-                                                                           onClick={this.props.handleAcceptRequest(request.song.id, request.id)}>Accept
+                                    {this.props.areYouAdmin ? <Button variant="primary"
+                                                                           onClick={this.props.handleAcceptRequest(request.requestId)}>Accept
                                             Request</Button> :
-                                        (this.props.loggedInUsername !== undefined && request.usersVoted.includes(this.props.loggedInUsername) ?
-                                            <Button variant="outline-secondary" onClick={this.props.removeVote(request.id)}>
+                                        (request.hasYourVote ?
+                                            <Button variant="outline-secondary" onClick={this.props.removeVote(request.requestId)}>
                                                 Remove Vote for Request
                                             </Button> :
                                             <Button variant="outline-secondary"
-                                                    onClick={this.props.loggedInUsername === undefined ? this.props.toggleLoginModal(this.props.addVote(request.id)) : this.props.addVote(request.id) }
+                                                    onClick={this.props.loggedInUsername === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }
                                             >
                                                 Vote for Request
                                             </Button>)
@@ -92,6 +93,48 @@ interface State {
     removeSongIds: string[];
     recentAddSongRequest: boolean;
     recentRemoveSongRequest: boolean;
+
+    playlist?: Playlist;
+    creator?: User;
+    // songs?: Song[];
+
+    areYouAdmin?: boolean;
+    addRequests?: SongRequest[];
+    removeRequests?: SongRequest[];
+}
+
+interface SongRequest {
+    requestId: number;
+    title: string;
+    artist: string;
+    album: string;
+    dateAdded: string;
+    duration: number;
+    numVotes: number;
+    hasYourVote: boolean;
+}
+
+export interface Playlist {
+    id: string;
+    title: string;
+    pictureURL: string;
+    description: string;
+    [otherOptions: string]: any;
+}
+
+interface User {
+    username: string; // unique
+    displayName: string;
+    [otherOptions: string]: any;
+}
+
+interface Song {
+    id: string;
+    title: string;
+    artist: string;
+    album: string;
+    duration: number;
+    addedAt?: string;
 }
 
 interface LocationState {
@@ -120,7 +163,9 @@ export default class RequestsPage extends React.Component<Props, State> {
             addSearchFocused: false,
             removeSongIds: [],
             recentAddSongRequest: false,
-            recentRemoveSongRequest: false
+            recentRemoveSongRequest: false,
+            playlist: undefined,
+            creator: undefined
         }
         this.toggleAddSong = this.toggleAddSong.bind(this);
         this.toggleRemoveSong = this.toggleRemoveSong.bind(this);
@@ -140,38 +185,40 @@ export default class RequestsPage extends React.Component<Props, State> {
     }
 
     removeVote(isAddRequest: boolean) {
-        return (requestId: string) => () => {
-            if (this.props.loggedInUsername !== undefined) {
-                let requestList;
-                if (isAddRequest) {
-                    requestList = playlistMap[this.props.match.params.playlistId].addRequests;
-                } else {
-                    requestList = playlistMap[this.props.match.params.playlistId].removeRequests;
-                }
-                const request = requestList.find(request => request.id === requestId);
-                if (request !== undefined) {
-                    request.usersVoted = request.usersVoted.filter(user => user !== "hci2021");
-                    this.forceUpdate();
-                }
-            }
+        return (requestId: number) => () => {
+            // todo: db logic
+            // if (this.props.loggedInUsername !== undefined) {
+            //     let requestList;
+            //     if (isAddRequest) {
+            //         requestList = playlistMap[this.props.match.params.playlistId].addRequests;
+            //     } else {
+            //         requestList = playlistMap[this.props.match.params.playlistId].removeRequests;
+            //     }
+            //     const request = requestList.find(request => request.id === requestId);
+            //     if (request !== undefined) {
+            //         request.usersVoted = request.usersVoted.filter(user => user !== "hci2021");
+            //         this.forceUpdate();
+            //     }
+            // }
         };
     }
 
     addVote(isAddRequest: boolean) {
-        return (requestId: string) => () => {
-            if (this.props.loggedInUsername !== undefined) {
-                let requestList;
-                if (isAddRequest) {
-                    requestList = playlistMap[this.props.match.params.playlistId].addRequests;
-                } else {
-                    requestList = playlistMap[this.props.match.params.playlistId].removeRequests;
-                }
-                const request = requestList.find(request => request.id === requestId);
-                if (request !== undefined && !request.usersVoted.includes("hci2021")) {
-                    request.usersVoted.push("hci2021");
-                    this.forceUpdate();
-                }
-            }
+        return (requestId: number) => () => {
+            // todo: db logic
+            // if (this.props.loggedInUsername !== undefined) {
+            //     let requestList;
+            //     if (isAddRequest) {
+            //         requestList = playlistMap[this.props.match.params.playlistId].addRequests;
+            //     } else {
+            //         requestList = playlistMap[this.props.match.params.playlistId].removeRequests;
+            //     }
+            //     const request = requestList.find(request => request.id === requestId);
+            //     if (request !== undefined && !request.usersVoted.includes("hci2021")) {
+            //         request.usersVoted.push("hci2021");
+            //         this.forceUpdate();
+            //     }
+            // }
         }
     }
 
@@ -181,32 +228,93 @@ export default class RequestsPage extends React.Component<Props, State> {
         });
     }
 
-    handleAcceptAddRequest(songId: string, requestId: string) {
+    handleAcceptAddRequest(requestId: number) {
         return () => {
-            let playlist: Playlist = playlistMap[this.props.match.params.playlistId];
-            playlist.addRequests = playlist.addRequests.filter((request) => request.id !== requestId);
-            playlist.songIds = playlist.songIds.concat(songId);
-
-            playlistMap[this.props.match.params.playlistId] = playlist;
-            this.forceUpdate();
+            // todo: do some db logic
+            // let playlist: Playlist = playlistMap[this.props.match.params.playlistId];
+            // playlist.addRequests = playlist.addRequests.filter((request: SongRequest) => request.requestId !== requestId);
+            // playlist.songIds = playlist.songIds.concat(songId);
+            //
+            // playlistMap[this.props.match.params.playlistId] = playlist;
+            // this.forceUpdate();
         }
     }
 
-    handleAcceptRemoveRequest(songId: string, requestId: string) {
+    handleAcceptRemoveRequest(requestId: number) {
         return () => {
-            let playlist: Playlist = playlistMap[this.props.match.params.playlistId];
-            playlist.removeRequests = playlist.removeRequests.filter((request) => request.id !== requestId);
-            playlist.songIds = playlist.songIds.filter((id) => id !== songId);
-
-            playlistMap[this.props.match.params.playlistId] = playlist;
-            this.forceUpdate();
+            // todo: do some db logic
+            // let playlist: Playlist = playlistMap[this.props.match.params.playlistId];
+            // playlist.removeRequests = playlist.removeRequests.filter((request) => request.id !== requestId);
+            // playlist.songIds = playlist.songIds.filter((id) => id !== songId);
+            //
+            // playlistMap[this.props.match.params.playlistId] = playlist;
+            // this.forceUpdate();
         }
+    }
+
+    componentDidMount() {
+        const accessToken = localStorage.getItem("sp-accessToken");
+        if (accessToken !== null) {
+            axios.get(`https://api.spotify.com/v1/playlists/${this.props.match.params.playlistId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                }
+            }).then(response => {
+                const data = response.data;
+                this.setState({
+                    playlist: {
+                        id: this.props.match.params.playlistId,
+                        title: data.name,
+                        pictureURL: data.images[0].url,
+                        description: data.description,
+                        isExternal: true
+                    }
+                });
+
+                console.log(`Display name: '${data.owner.display_name}'`);
+                this.setState({
+                    creator: {
+                        username: data.owner.id,
+                        displayName: data.owner.display_name
+                    }
+                });
+            });
+
+            axios.get(`http://localhost:8888/playlists/${this.props.match.params.playlistId}/requests`, {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                }
+            }).then(response => {
+
+                interface SongRequestList {
+                    areYouAdmin: boolean;
+                    addRequests: SongRequest[];
+                    removeRequests: SongRequest[];
+                }
+
+                const data: SongRequestList = response.data;
+                // TODO: create types (just copy/paste from types.ts and modify to use nullable/optional)
+                // TODO: convert playlist, songs, creator consts in render() method to tolerate undefined,
+                // and use state instead of these consts
+                // TODO: translate API response properties into the needed data
+                this.setState({
+                    areYouAdmin: data.areYouAdmin,
+                    addRequests: data.addRequests,
+                    removeRequests: data.removeRequests
+                });
+            });
+        }
+        // const playlist = playlistMap[props.match.params.playlistId];
+        // const creator = userMap[playlist.creator];
+        // const songs = playlist.songIds.map(id => songMap[id]);
     }
 
     render() {
-        const playlist = playlistMap[this.props.match.params.playlistId];
-        const creator = userMap[playlist.creator];
-        const songs = playlist.songIds.map(id => songMap[id]);
+        // const playlist = playlistMap[this.props.match.params.playlistId];
+        // const creator = userMap[playlist.creator];
+        // // const songs = playlist.songIds.map(id => songMap[id]);
+        // const addRequests = playlist.addRequests;
+        // const removeRequests = playlist.removeRequests;
 
         // replace instead of push because you can't push the same path
         const addRequestCallback = () => this.props.history.replace({
@@ -217,33 +325,55 @@ export default class RequestsPage extends React.Component<Props, State> {
             state: {showRemoveSong: true}
         });
 
-        const finishRequestingSongRemovals = () => {
-            this.state.removeSongIds.forEach(element => {
-                // todo fix s1234 repeated key
-                playlistMap[playlist.id].removeRequests.push({id: `r${playlistMap[playlist.id].removeRequests.length + 1}`, song: songMap[element], usersVoted: ["hci2021"]});
-            });
-            this.setState({addSearchQuery: "", addSearchFocused: false, removeSongIds: [], showAddSong: false, recentRemoveSongRequest: true});
-            setTimeout(function() {
-                //@ts-ignore (sorry!)
-                this.setState({recentRemoveSongRequest: false})
-            }.bind(this), 3000)
-            this.toggleRemoveSong();
+        const finishRequestingSongAdditions = () => {
+            // todo
+            if (this.state.playlist !== undefined) {
+                this.state.playlist.addRequests.push({id: `r${this.state.playlist.addRequests.length + 1}`, song: songMap[this.state.selectedAddSongId], usersVoted: ["hci2021"]});
+                this.setState({addSearchQuery: "", addSearchFocused: false, selectedAddSongId: "", showAddSong: false, recentAddSongRequest: true});
+                setTimeout(function() {
+                    //@ts-ignore (sorry!)
+                    this.setState({recentAddSongRequest: false})
+                }.bind(this), 3000);
+            }
         };
+
+        const finishRequestingSongRemovals = () => {
+            // todo
+            if (this.state.playlist !== undefined) {
+                // this.state.removeSongIds.forEach(element => {
+                //     this.state.playlist.removeRequests.push({id: `r${this.state.playlist.removeRequests.length + 1}`, song: songMap[element], usersVoted: ["hci2021"]});
+                // });
+                // this.setState({addSearchQuery: "", addSearchFocused: false, removeSongIds: [], showAddSong: false, recentRemoveSongRequest: true});
+                // setTimeout(function() {
+                //     //@ts-ignore (sorry!)
+                //     this.setState({recentRemoveSongRequest: false})
+                // }.bind(this), 3000)
+                this.toggleRemoveSong();
+            }
+        };
+
+        console.log(`Playlist ${this.state.playlist} creator ${this.state.creator}`);
 
         return (
             <Container className="museo-300">
                 <Row className="mt-4">
                     <Col xs={12}>
-                        <Link to={`/playlist/${playlist.id}`}>&#8592; Go back to playlist</Link>
+                        <Link to={`/playlist/${this.props.match.params.playlistId}`}>&#8592; Go back to playlist</Link>
                     </Col>
                 </Row>
                 <Row className="mb-4">
                     <Col xs={8}>
                         <h1 className="museo-display-black">Song Requests</h1>
-                        Playlist: <Link to={`/playlist/${playlist.id}`}>{playlist.title}</Link> by <Link to={`/user/${creator.username}`}>{creator.displayName}</Link>
+                        {
+                            this.state.playlist && this.state.creator && <>
+                                Playlist: <Link
+                                to={`/playlist/${this.props.match.params.playlistId}`}>{this.state.playlist.title}</Link> by <Link
+                                to={`/user/${this.state.creator.username}`}>{this.state.creator.displayName}</Link>
+                            </>
+                        }
                     </Col>
                     <Col xs={4} className="text-right">
-                        {creator.username !== this.props.loggedInUsername && (
+                        {this.state.creator && this.state.creator.username !== this.props.loggedInUsername && (
                             <div>
                                 <Button variant="outline-primary" className="museo-300 mb-2"
                                         onClick={this.props.loggedInUsername === undefined ? this.props.toggleLoginModal(addRequestCallback) : this.toggleAddSong}>
@@ -263,10 +393,10 @@ export default class RequestsPage extends React.Component<Props, State> {
                         <h2 className="museo-display-light">Add Song Requests</h2>
                         <Alert variant="success" show={this.state.recentAddSongRequest}>
                             Your request to add a song from the playlist was made successfully.
-                        </Alert> 
+                        </Alert>
                         <RequestsTable handleAcceptRequest={this.handleAcceptAddRequest}
-                                       adminPermissions={creator.username === this.props.loggedInUsername}
-                                       requests={playlist.addRequests}
+                                       adminPermissions={this.state.areYouAdmin || false}
+                                       requests={this.state.addRequests || []}
                                        removeVote={this.removeVote(true)}
                                        addVote={this.addVote(true)}
                                        loggedInUsername={this.props.loggedInUsername}
@@ -279,10 +409,10 @@ export default class RequestsPage extends React.Component<Props, State> {
                         <h2 className="museo-display-light">Remove Song Requests</h2>
                         <Alert variant="success" show={this.state.recentRemoveSongRequest}>
                             Your request to remove a song from the playlist was made successfully.
-                        </Alert> 
+                        </Alert>
                         <RequestsTable handleAcceptRequest={this.handleAcceptRemoveRequest}
-                                       adminPermissions={creator.username === this.props.loggedInUsername}
-                                       requests={playlist.removeRequests}
+                                       adminPermissions={this.state.areYouAdmin || false}
+                                       requests={this.state.removeRequests || []}
                                        removeVote={this.removeVote(false)}
                                        addVote={this.addVote(false)}
                                        loggedInUsername={this.props.loggedInUsername}
@@ -353,14 +483,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                         </Button>
                         {
                             this.state.selectedAddSongId ? (
-                                <Button variant="primary" onClick={() => {
-                                    playlistMap[playlist.id].addRequests.push({id: `r${playlistMap[playlist.id].addRequests.length + 1}`, song: songMap[this.state.selectedAddSongId], usersVoted: ["hci2021"]});
-                                    this.setState({addSearchQuery: "", addSearchFocused: false, selectedAddSongId: "", showAddSong: false, recentAddSongRequest: true});
-                                    setTimeout(function() {
-                                        //@ts-ignore (sorry!)
-                                        this.setState({recentAddSongRequest: false})
-                                    }.bind(this), 3000)
-                                }}>
+                                <Button variant="primary" onClick={finishRequestingSongAdditions}>
                                     Request this song
                                 </Button>
                             ) : ""
@@ -384,8 +507,8 @@ export default class RequestsPage extends React.Component<Props, State> {
                                 </tr>
                             </thead>
                             <tbody>
-                                {
-                                    Array.from(songs.entries()).map(([i, song]) => (
+                                { // todo: replace [] with list of songs retrieved from API
+                                    Array.from([].entries()).map(([i, song]: [number, any]) => (
                                         this.state.removeSongIds.includes(song.id) ? (
                                             <tr key={song.id}>
                                                 <td colSpan={Object.keys(REMOVE_REQUEST_TH_LABELS).length}>
