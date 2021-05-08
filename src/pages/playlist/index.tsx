@@ -39,7 +39,7 @@ interface Song {
     artist: string;
     album: string;
     duration: number;
-    addedAt?: string;
+    addedAt?: string; // todo: make this not optional
 }
 
 export default function PlaylistPage(props: Props) {
@@ -214,7 +214,7 @@ export default function PlaylistPage(props: Props) {
                         <tbody>
                         {
                             Array.from(songs.entries()).map(([i, song]) => (
-                                <tr key={song.id}>
+                                <tr key={i}>
                                     <td>{i + 1}</td>
                                     <td>{song.title}</td>
                                     <td>{song.artist}</td>
