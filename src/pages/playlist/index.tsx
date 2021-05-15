@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {Button, Col, Container, Row, Table, Image} from "react-bootstrap";
 import {playlistMap, songMap, userMap} from "../../common/data";
-import {secondsToHoursString, secondsToMinutesString, sum} from "../../common/utils";
+import {convertDate, secondsToHoursString, secondsToMinutesString, sum} from "../../common/utils";
 import {Link} from "react-router-dom";
 import {useHistory} from "react-router";
 import axios from "axios";
@@ -126,16 +126,6 @@ export default function PlaylistPage(props: Props) {
         pathname: `/playlist/${props.match.params.playlistId}/requests`,
         state: {showRemoveSong: true}
     });
-
-    function convertDate(date?: string) {
-        if (date === undefined) {
-            return "2021-03-30";
-        }
-        const parsedDate = new Date(date);
-        const paddedMonth = (parsedDate.getMonth() + 1).toString().padStart(2, "0");
-        const paddedDate = parsedDate.getDate().toString().padStart(2, "0");
-        return `${parsedDate.getFullYear()}-${paddedMonth}-${paddedDate}`;
-    }
 
     return (
         <Container>

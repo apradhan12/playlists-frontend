@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Alert, Button, Col, Container, Form, FormControl, Modal, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { playlistMap, songMap, userMap } from "../../common/data";
-import { secondsToMinutesString } from "../../common/utils";
+import {convertDate, secondsToMinutesString} from "../../common/utils";
 import "./style.css";
 import { ChangeEvent } from 'react';
 import axios from "axios";
@@ -43,7 +43,7 @@ class RequestsTable extends Component<RequestsTableProps> {
                                 <td>{request.title}</td>
                                 <td>{request.artist}</td>
                                 <td>{request.album}</td>
-                                <td>2021-03-30</td>
+                                <td>{convertDate(request.dateAdded)}</td>
                                 <td>{secondsToMinutesString(Math.floor(request.duration / 1000))}</td>
                                 <td>{request.numVotes}</td>
                                 <td>

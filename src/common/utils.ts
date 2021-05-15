@@ -12,3 +12,13 @@ export function secondsToHoursString(seconds: number) {
 export function sum(nums: number[]) {
     return nums.reduce((a, b) => a + b, 0)
 }
+
+export function convertDate(date?: string) {
+    if (date === undefined) {
+        return "2021-03-30";
+    }
+    const parsedDate = new Date(date);
+    const paddedMonth = (parsedDate.getMonth() + 1).toString().padStart(2, "0");
+    const paddedDate = parsedDate.getDate().toString().padStart(2, "0");
+    return `${parsedDate.getFullYear()}-${paddedMonth}-${paddedDate}`;
+}
