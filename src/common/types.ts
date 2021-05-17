@@ -13,7 +13,7 @@ export interface Playlist {
     pictureURL: string;
     description: string;
     songIds: string[];
-    creator: string; // userId
+    owner: string; // userId
     admins: string[]; // userIds
     addRequests: SongRequest[];
     removeRequests: SongRequest[];

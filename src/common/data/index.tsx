@@ -142,7 +142,7 @@ export const playlistMap: PlaylistMap = {
         pictureURL: "/album.jpg",
         description: "Best rock songs of the 1960s and 1970s",
         songIds: ["123", "456", "s7"],
-        creator: "aaron1200",
+        owner: "aaron1200",
         admins: ["joeiscool", "michelle1721"],
         addRequests: [
             {
@@ -170,7 +170,7 @@ export const playlistMap: PlaylistMap = {
         pictureURL: "/bike.jpg",
         description: "Big bass drops and crazy synths",
         songIds: ["s3"],
-        creator: "hci2021",
+        owner: "hci2021",
         admins: ["joeiscool", "michelle1721"],
         addRequests: [
             {
@@ -192,7 +192,7 @@ export const playlistMap: PlaylistMap = {
         pictureURL: "/classical.jpg",
         description: "Relaxing classical music for studying - no lyrics",
         songIds: ["s8"],
-        creator: "joeiscool",
+        owner: "joeiscool",
         admins: [],
         addRequests: [],
         removeRequests: []
@@ -203,7 +203,7 @@ export const playlistMap: PlaylistMap = {
         pictureURL: "/jazz.jpg",
         description: "Warm jazz for cool nights",
         songIds: ["s9"],
-        creator: "michelle1721",
+        owner: "michelle1721",
         admins: [],
         addRequests: [],
         removeRequests: []

@@ -95,7 +95,7 @@ interface State {
     recentRemoveSongRequest: boolean;
 
     playlist?: Playlist;
-    creator?: User;
+    owner?: User;
     // songs?: Song[];
 
     areYouAdmin?: boolean;
@@ -165,7 +165,7 @@ export default class RequestsPage extends React.Component<Props, State> {
             recentAddSongRequest: false,
             recentRemoveSongRequest: false,
             playlist: undefined,
-            creator: undefined
+            owner: undefined
         }
         this.toggleAddSong = this.toggleAddSong.bind(this);
         this.toggleRemoveSong = this.toggleRemoveSong.bind(this);
@@ -273,7 +273,7 @@ export default class RequestsPage extends React.Component<Props, State> {
 
                 console.log(`Display name: '${data.owner.display_name}'`);
                 this.setState({
-                    creator: {
+                    owner: {
                         userId: data.owner.id,
                         displayName: data.owner.display_name
                     }
@@ -294,7 +294,7 @@ export default class RequestsPage extends React.Component<Props, State> {
 
                 const data: SongRequestList = response.data;
                 // TODO: create types (just copy/paste from types.ts and modify to use nullable/optional)
-                // TODO: convert playlist, songs, creator consts in render() method to tolerate undefined,
+                // TODO: convert playlist, songs, owner consts in render() method to tolerate undefined,
                 // and use state instead of these consts
                 // TODO: translate API response properties into the needed data
                 this.setState({
@@ -305,13 +305,13 @@ export default class RequestsPage extends React.Component<Props, State> {
             });
         }
         // const playlist = playlistMap[props.match.params.playlistId];
-        // const creator = userMap[playlist.creator];
+        // const owner = userMap[playlist.owner];
         // const songs = playlist.songIds.map(id => songMap[id]);
     }
 
     render() {
         // const playlist = playlistMap[this.props.match.params.playlistId];
-        // const creator = userMap[playlist.creator];
+        // const owner = userMap[playlist.owner];
         // // const songs = playlist.songIds.map(id => songMap[id]);
         // const addRequests = playlist.addRequests;
         // const removeRequests = playlist.removeRequests;
@@ -352,7 +352,7 @@ export default class RequestsPage extends React.Component<Props, State> {
             }
         };
 
-        console.log(`Playlist ${this.state.playlist} creator ${this.state.creator}`);
+        console.log(`Playlist ${this.state.playlist} owner ${this.state.owner}`);
 
         return (
             <Container className="museo-300">
@@ -365,15 +365,15 @@ export default class RequestsPage extends React.Component<Props, State> {
                     <Col xs={8}>
                         <h1 className="museo-display-black">Song Requests</h1>
                         {
-                            this.state.playlist && this.state.creator && <>
+                            this.state.playlist && this.state.owner && <>
                                 Playlist: <Link
                                 to={`/playlist/${this.props.match.params.playlistId}`}>{this.state.playlist.title}</Link> by <Link
-                                to={`/user/${this.state.creator.userId}`}>{this.state.creator.displayName}</Link>
+                                to={`/user/${this.state.owner.userId}`}>{this.state.owner.displayName}</Link>
                             </>
                         }
                     </Col>
                     <Col xs={4} className="text-right">
-                        {this.state.creator && this.state.creator.userId !== this.props.loggedInUserId && (
+                        {this.state.owner && this.state.owner.userId !== this.props.loggedInUserId && (
                             <div>
                                 <Button variant="outline-primary" className="museo-300 mb-2"
                                         onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(addRequestCallback) : this.toggleAddSong}>

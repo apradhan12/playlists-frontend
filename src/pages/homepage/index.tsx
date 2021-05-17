@@ -48,11 +48,6 @@ interface SpotifyPlaylistTracks {
     "total": number;
 }
 
-interface Params {
-    access_token: string;
-    refresh_token: string;
-}
-
 class Homepage extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
@@ -133,7 +128,7 @@ class Homepage extends React.Component<Props, State> {
                                         <div style={{boxShadow: "1px 1px 10px gray", padding: ".75em", borderRadius: "10px", height: "100%"}}> 
                                             <Image className="mb-3" fluid src={process.env.PUBLIC_URL + playlist.pictureURL} />
                                             <p className="mb-1 museo-700">{playlist.title}</p>
-                                            <p className="mb-1">{userMap[playlist.creator].displayName}</p>
+                                            <p className="mb-1">{userMap[playlist.owner].displayName}</p>
                                             <p className="mb-1">{playlist.songIds.length} {playlist.songIds.length === 1 ? "song" : "songs"}</p>
                                         </div>
                                     </Link>

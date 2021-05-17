@@ -54,7 +54,7 @@ export default class PlaylistSearchBar extends Component<Props, State>  {
                             <thead>
                             <tr>
                                 <th>Title</th>
-                                <th>Creator</th>
+                                <th>Owner</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -81,7 +81,7 @@ export default class PlaylistSearchBar extends Component<Props, State>  {
                                             key={playlist.id}
                                         >
                                             <td>{playlist.title}</td>
-                                            <td>{playlist.creator}</td>
+                                            <td>{playlist.owner}</td>
                                         </tr>
                                     ))
                             }

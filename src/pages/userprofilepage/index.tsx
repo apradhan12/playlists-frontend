@@ -42,7 +42,7 @@ export default class UserProfile extends React.Component<Props> {
                             <tbody>
                                 {
                                 Array.from(Object.entries(playlistMap))
-                                    .filter(([_, playlist]) => playlist.creator === user.userId)
+                                    .filter(([_, playlist]) => playlist.owner === user.userId)
                                     .map(([_, playlist]) => {
                                         return (
                                             <tr key={playlist.id}>

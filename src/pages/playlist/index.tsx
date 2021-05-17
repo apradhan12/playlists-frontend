@@ -22,7 +22,7 @@ interface Playlist {
     pictureURL: string;
     description: string;
     // songIds: string[];
-    // creator: string; // userId
+    // owner: string; // userId
     // admins: string[]; // userIds
     [otherOptions: string]: any;
 }
@@ -46,16 +46,16 @@ export default function PlaylistPage(props: Props) {
     const history = useHistory();
 
     const [playlist, setPlaylist] = React.useState<Playlist | null>(null);
-    const [creator, setCreator] = React.useState<User | null>(null);
+    const [owner, setOwner] = React.useState<User | null>(null);
     const [songs, setSongs] = React.useState<Song[]>([]);
 
     useEffect(() => {
         if (playlistMap.hasOwnProperty(props.match.params.playlistId)) {
             const localPlaylist = playlistMap[props.match.params.playlistId];
-            const localCreator = userMap[localPlaylist.creator];
+            const localOwner = userMap[localPlaylist.owner];
             const localSongs = localPlaylist.songIds.map((id: string) => songMap[id]);
             setPlaylist(localPlaylist)
-            setCreator(localCreator);
+            setOwner(localOwner);
             setSongs(localSongs);
         } else {
             const accessToken = localStorage.getItem("sp-accessToken");
@@ -75,7 +75,7 @@ export default function PlaylistPage(props: Props) {
                     });
 
                     console.log(`Display name: '${data.owner.display_name}'`);
-                    setCreator({
+                    setOwner({
                         userId: data.owner.id,
                         displayName: data.owner.display_name
                     });
@@ -112,7 +112,7 @@ export default function PlaylistPage(props: Props) {
                 });
             }
             // const playlist = playlistMap[props.match.params.playlistId];
-            // const creator = userMap[playlist.creator];
+            // const owner = userMap[playlist.owner];
             // const songs = playlist.songIds.map(id => songMap[id]);
         }
     }, [props.match.params.playlistId]);
@@ -140,7 +140,7 @@ export default function PlaylistPage(props: Props) {
                     <p className="museo-display-light m-0">Playlist</p>
                     <h1 className="museo-display-black">{playlist ? playlist.title : ""}</h1>
                     {
-                        creator && <p className="museo-300 mb-0">Created by <Link to={`/user/${creator.userId}`}>{creator.displayName}</Link></p>
+                        owner && <p className="museo-300 mb-0">Created by <Link to={`/user/${owner.userId}`}>{owner.displayName}</Link></p>
                     }
                     <p className="museo-300 italic">{songs.length} {songs.length === 1 ? "song" : "songs"}, {secondsToHoursString(sum(songs.map(song => song.duration)))}</p>
                     <Button 
@@ -157,9 +157,9 @@ export default function PlaylistPage(props: Props) {
                 </Col>
                 <Col xs={4} className="text-right">
                     {
-                        creator && playlist && <>
-                            {/* TODO: This should be based on areYouAdmin, not creator.userId */}
-                            { (creator.userId === props.loggedInUserId) ? (
+                        owner && playlist && <>
+                            {/* TODO: This should be based on areYouAdmin, not owner.userId */}
+                            { (owner.userId === props.loggedInUserId) ? (
                                 <div>
                                     <Link to={`/playlist/${playlist.id}/requests`}>
                                         <Button variant="primary" className="museo-300 mb-2">Manage Song Requests</Button><br />
