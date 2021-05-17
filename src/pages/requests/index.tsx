@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Alert, Button, Col, Container, Form, FormControl, Modal, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { songMap } from "../../common/data";
 import {convertDate, secondsToMinutesString} from "../../common/utils";
 import "./style.css";
 import { ChangeEvent } from 'react';
@@ -88,7 +87,7 @@ interface State {
     showAddSong: boolean;
     showRemoveSong: boolean;
     addSearchQuery: string;
-    selectedAddSongId: string;
+    selectedAddSong: Song | null;
     addSearchFocused: boolean;
     removeSongIds: string[];
     recentAddSongRequest: boolean;
@@ -130,14 +129,13 @@ interface User {
     [otherOptions: string]: any;
 }
 
-// interface Song {
-//     id: string;
-//     title: string;
-//     artist: string;
-//     album: string;
-//     duration: number;
-//     addedAt?: string;
-// }
+interface Song {
+    id: string;
+    name: string;
+    artist: string;
+    album: string;
+    duration: number;
+}
 
 interface LocationState {
     showAddSong?: boolean;
@@ -161,7 +159,7 @@ export default class RequestsPage extends React.Component<Props, State> {
             showAddSong: (this.props.location.state !== undefined) && (this.props.location.state.showAddSong === true),
             showRemoveSong: (this.props.location.state !== undefined) && (this.props.location.state.showRemoveSong === true),
             addSearchQuery: "",
-            selectedAddSongId: "",
+            selectedAddSong: null,
             addSearchFocused: false,
             removeSongIds: [],
             recentAddSongRequest: false,
@@ -180,7 +178,7 @@ export default class RequestsPage extends React.Component<Props, State> {
     }
 
     toggleAddSong() {
-        this.setState(prevState => ({ addSearchQuery: "", addSearchFocused: false, selectedAddSongId: "", showAddSong: !prevState.showAddSong }));
+        this.setState(prevState => ({ addSearchQuery: "", addSearchFocused: false, selectedAddSong: null, showAddSong: !prevState.showAddSong }));
     }
 
     toggleRemoveSong() {
@@ -239,14 +237,13 @@ export default class RequestsPage extends React.Component<Props, State> {
             }
             // todo: include market?
         }).then(response => {
-            const tracks = response.data.tracks.items.map((item: any) => ({
+            const tracks: Song[] = response.data.tracks.items.map((item: any) => ({
                 album: item.album.name,
                 id: item.id,
                 name: item.name,
                 artist: item.artists.map((artist: any) => artist.name).join(", "),
-                duration: secondsToMinutesString(Math.floor(item.duration_ms / 1000))
+                duration: Math.floor(item.duration_ms / 1000)
             })).slice(0, 10);
-            console.log();
             this.setState({
                 results: tracks
             });
@@ -353,8 +350,24 @@ export default class RequestsPage extends React.Component<Props, State> {
         const finishRequestingSongAdditions = () => {
             // todo
             if (this.state.playlist !== undefined) {
-                this.state.playlist.addRequests.push({id: `r${this.state.playlist.addRequests.length + 1}`, song: songMap[this.state.selectedAddSongId], usersVoted: ["hci2021"]});
-                this.setState({addSearchQuery: "", addSearchFocused: false, selectedAddSongId: "", showAddSong: false, recentAddSongRequest: true});
+                if (this.state.selectedAddSong) {
+                    axios({
+                        method: 'post',
+                        url: `http://localhost:8888/playlists/${this.props.match.params.playlistId}/requests`,
+                        data: {
+                            songsToAdd: [this.state.selectedAddSong.id],
+                            songsToRemove: []
+                        },
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("sp-accessToken")}`
+                        }
+                    }).then(response => {
+                        console.log("success");
+                    }); // todo catch
+                }
+                // this.state.playlist.addRequests.push({id: `r${this.state.playlist.addRequests.length + 1}`, song: this.state.selectedAddSong, usersVoted: ["hci2021"]});
+                this.setState({addSearchQuery: "", addSearchFocused: false, selectedAddSong: null, showAddSong: false, recentAddSongRequest: true});
+                // todo don't do this unless there's a selected add song
                 setTimeout(function() {
                     //@ts-ignore (sorry!)
                     this.setState({recentAddSongRequest: false})
@@ -462,7 +475,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                                 onChange={this.updateSearchQuery}
                             />
                             {
-                                (this.state.addSearchQuery && (!this.state.selectedAddSongId || this.state.addSearchFocused)) ?
+                                (this.state.addSearchQuery && (!this.state.selectedAddSong || this.state.addSearchFocused)) ?
                                     (
                                         <Table className="mx-3 w-auto">
                                             <thead>
@@ -477,16 +490,25 @@ export default class RequestsPage extends React.Component<Props, State> {
                                                 {
                                                     Array.from(Object.entries(this.state.results))
                                                         .map(([_, song]) => (
-                                                            <tr className="dropdown-item"
-                                                                role="button"
-                                                                style={{ display: "table-row" }}
-                                                                onClick={() => this.setState({ selectedAddSongId: song.id, addSearchFocused: false })}
+                                                            <tr role="button"
+                                                                style={{
+                                                                    display: "table-row",
+                                                                    width: "100%",
+                                                                    padding: ".25rem 1.5rem",
+                                                                    clear: "both",
+                                                                    fontWeight: 400,
+                                                                    color: "#212529",
+                                                                    textAlign: "inherit",
+                                                                    backgroundColor: "transparent",
+                                                                    border: 0
+                                                                }}
+                                                                onClick={() => this.setState({ selectedAddSong: song, addSearchFocused: false })}
                                                                 key={song.id}
                                                             >
                                                                 <td>{song.name}</td>
                                                                 <td>{song.artist}</td>
                                                                 <td>{song.album}</td>
-                                                                <td>{song.duration}</td>
+                                                                <td>{secondsToMinutesString(song.duration)}</td>
                                                             </tr>
                                                         ))
                                                 }
@@ -496,8 +518,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                                     : ""
                             }
                             {
-                                // todo: change to song name
-                                this.state.selectedAddSongId ? this.state.selectedAddSongId : ""
+                                this.state.selectedAddSong ? this.state.selectedAddSong.name : ""
                             }
                         </Form>
                     </Modal.Body>
@@ -506,7 +527,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                             Cancel and Close
                         </Button>
                         {
-                            this.state.selectedAddSongId ? (
+                            this.state.selectedAddSong ? (
                                 <Button variant="primary" onClick={finishRequestingSongAdditions}>
                                     Request this song
                                 </Button>
