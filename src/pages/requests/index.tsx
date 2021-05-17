@@ -101,6 +101,8 @@ interface State {
     areYouAdmin?: boolean;
     addRequests?: SongRequest[];
     removeRequests?: SongRequest[];
+
+    results: any[];
 }
 
 interface SongRequest {
@@ -165,7 +167,8 @@ export default class RequestsPage extends React.Component<Props, State> {
             recentAddSongRequest: false,
             recentRemoveSongRequest: false,
             playlist: undefined,
-            owner: undefined
+            owner: undefined,
+            results: []
         }
         this.toggleAddSong = this.toggleAddSong.bind(this);
         this.toggleRemoveSong = this.toggleRemoveSong.bind(this);
@@ -225,6 +228,28 @@ export default class RequestsPage extends React.Component<Props, State> {
     updateSearchQuery(event: ChangeEvent<HTMLInputElement>) {
         this.setState({
             addSearchQuery: event.target.value
+        });
+        axios.get("https://api.spotify.com/v1/search", {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("sp-accessToken")}`
+            },
+            params: {
+                q: event.target.value,
+                type: "track"
+            }
+            // todo: include market?
+        }).then(response => {
+            const tracks = response.data.tracks.items.map((item: any) => ({
+                album: item.album.name,
+                id: item.id,
+                name: item.name,
+                artist: item.artists.map((artist: any) => artist.name).join(", "),
+                duration: secondsToMinutesString(Math.floor(item.duration_ms / 1000))
+            })).slice(0, 10);
+            console.log();
+            this.setState({
+                results: tracks
+            });
         });
     }
 
@@ -450,9 +475,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                                             </thead>
                                             <tbody>
                                                 {
-                                                    Array.from(Object.entries(songMap))
-                                                        .filter(([_, song]) =>
-                                                            song.title.toLowerCase().includes(this.state.addSearchQuery.toLowerCase()))
+                                                    Array.from(Object.entries(this.state.results))
                                                         .map(([_, song]) => (
                                                             <tr className="dropdown-item"
                                                                 role="button"
@@ -460,10 +483,10 @@ export default class RequestsPage extends React.Component<Props, State> {
                                                                 onClick={() => this.setState({ selectedAddSongId: song.id, addSearchFocused: false })}
                                                                 key={song.id}
                                                             >
-                                                                <td>{song.title}</td>
+                                                                <td>{song.name}</td>
                                                                 <td>{song.artist}</td>
                                                                 <td>{song.album}</td>
-                                                                <td>{secondsToMinutesString(song.duration)}</td>
+                                                                <td>{song.duration}</td>
                                                             </tr>
                                                         ))
                                                 }
@@ -473,7 +496,8 @@ export default class RequestsPage extends React.Component<Props, State> {
                                     : ""
                             }
                             {
-                                this.state.selectedAddSongId ? songMap[this.state.selectedAddSongId].title : ""
+                                // todo: change to song name
+                                this.state.selectedAddSongId ? this.state.selectedAddSongId : ""
                             }
                         </Form>
                     </Modal.Body>
