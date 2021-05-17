@@ -16,9 +16,9 @@ interface State {
     showHide: boolean;
     showHideRemove: boolean;
     searchQuery: string;
-    selectedAdminUsername: string;
+    selectedAdminUserId: string;
     searchFocused: boolean;
-    removeAdminUsernames: string[];
+    removeAdminUserIds: string[];
 }
 
 export default class ManageAdmin extends React.Component<Props, State> {
@@ -29,9 +29,9 @@ export default class ManageAdmin extends React.Component<Props, State> {
             showHide: false,
             showHideRemove: false,
             searchQuery: "",
-            selectedAdminUsername: "",
+            selectedAdminUserId: "",
             searchFocused: false,
-            removeAdminUsernames: []
+            removeAdminUserIds: []
         };
         this.handleModalShowHide = this.handleModalShowHide.bind(this);
         this.updateSearchQuery = this.updateSearchQuery.bind(this);
@@ -56,7 +56,7 @@ export default class ManageAdmin extends React.Component<Props, State> {
                     <Col xs={12}>
                         <Link to={`/playlist/${playlist.id}`}>&#8592; Go back to playlist</Link>
                         <h1 className="museo-display-black">Manage Administrators</h1>
-                        <p>Playlist: <Link to={`/playlist/${playlist.id}`}>{playlist.title}</Link> by <Link to={`/user/${creator.username}`}>{creator.displayName}</Link></p>
+                        <p>Playlist: <Link to={`/playlist/${playlist.id}`}>{playlist.title}</Link> by <Link to={`/user/${creator.userId}`}>{creator.displayName}</Link></p>
                     </Col>
                 </Row>
                 <Row className="mb-4">
@@ -93,11 +93,11 @@ export default class ManageAdmin extends React.Component<Props, State> {
                         <Form onFocus={() => this.setState({ searchFocused: true })}>
                             <FormControl autoFocus
                                 className="mx-3 my-2 w-auto"
-                                placeholder="Type a username..."
+                                placeholder="Type a userId..."
                                 value={this.state.searchQuery}
                                 onChange={this.updateSearchQuery} />
                             {
-                                (this.state.searchQuery && (!this.state.selectedAdminUsername || this.state.searchFocused)) ?
+                                (this.state.searchQuery && (!this.state.selectedAdminUserId || this.state.searchFocused)) ?
                                     (
                                         <Table className="mx-3 w-auto">
                                             <thead>
@@ -109,14 +109,14 @@ export default class ManageAdmin extends React.Component<Props, State> {
                                                 {
                                                     Array.from(Object.entries(userMap))
                                                         .filter(([_, user]) =>
-                                                            user.username.toLowerCase().includes(this.state.searchQuery.toLowerCase()) && !playlist.admins.includes(user.username)) 
+                                                            user.userId.toLowerCase().includes(this.state.searchQuery.toLowerCase()) && !playlist.admins.includes(user.userId))
                                                         .map(([_, user]) => (
                                                             <tr className="dropdown-item"
                                                                 role="button"
                                                                 style={{ display: "table-row" }}
-                                                                onClick={() => { this.setState({ selectedAdminUsername: user.username, searchFocused: false }); console.log(user.username) }}
+                                                                onClick={() => { this.setState({ selectedAdminUserId: user.userId, searchFocused: false }); console.log(user.userId) }}
                                                             >
-                                                                <td>{user.username}</td>
+                                                                <td>{user.userId}</td>
                                                             </tr>
                                                         ))
                                                 }
@@ -126,20 +126,20 @@ export default class ManageAdmin extends React.Component<Props, State> {
                                     : ""
                             }
                             {
-                                this.state.selectedAdminUsername ? userMap[this.state.selectedAdminUsername].username : ""
+                                this.state.selectedAdminUserId ? userMap[this.state.selectedAdminUserId].userId : ""
                             }
                             {/* <Button variant="secondary" style={{ borderRadius: "0px 5px 5px 0px", borderLeft: "none" }}>Search</Button> */}
                         </Form>
                     </Modal.Body>
                     <Modal.Footer style={{ justifyContent: "flex-end" }}>
-                        <Button variant="secondary" onClick={() => { this.setState({ searchQuery: "", searchFocused: false, selectedAdminUsername: "", showHide: false }) }}>
+                        <Button variant="secondary" onClick={() => { this.setState({ searchQuery: "", searchFocused: false, selectedAdminUserId: "", showHide: false }) }}>
                             Close this window
                         </Button>
                         {
-                            this.state.selectedAdminUsername ? (
+                            this.state.selectedAdminUserId ? (
                                 <Button variant="primary" onClick={() => {
-                                    playlistMap[playlist.id].admins.push(userMap[this.state.selectedAdminUsername].username);
-                                    this.setState({searchQuery: "", searchFocused: false, selectedAdminUsername: "", showHide: false});
+                                    playlistMap[playlist.id].admins.push(userMap[this.state.selectedAdminUserId].userId);
+                                    this.setState({searchQuery: "", searchFocused: false, selectedAdminUserId: "", showHide: false});
                                 }}>
                                     Add Administrator
                                 </Button>
@@ -157,18 +157,18 @@ export default class ManageAdmin extends React.Component<Props, State> {
                         <Table striped bordered hover>
                             <thead>
                             <tr>
-                            <th className="width-50">Username</th>
+                            <th className="width-50">UserId</th>
                             <th className="width-50">Actions</th>
                             </tr>
                             </thead>
                             <tbody>{playlist.admins.map((adminName) => (
-                                this.state.removeAdminUsernames.includes(adminName) ? (
+                                this.state.removeAdminUserIds.includes(adminName) ? (
                                         <tr key={adminName}>
                                             <td colSpan={2}>You removed {adminName}.&nbsp;
                                                 <Button
                                                     variant="outline-secondary"
                                                     onClick={() => this.setState(prevState => ({
-                                                        removeAdminUsernames: prevState.removeAdminUsernames.filter(username => username !== adminName)
+                                                        removeAdminUserIds: prevState.removeAdminUserIds.filter(userId => userId !== adminName)
                                                     }))}
                                                 >
                                                     Undo
@@ -180,7 +180,7 @@ export default class ManageAdmin extends React.Component<Props, State> {
                                         <td>{adminName}</td>
                                         <td><Button variant="outline-danger"
                                                     onClick={() => this.setState(prevState =>
-                                                        ({removeAdminUsernames: prevState.removeAdminUsernames.concat(adminName)}))}>
+                                                        ({removeAdminUserIds: prevState.removeAdminUserIds.concat(adminName)}))}>
                                             Remove administrator
                                         </Button>
                                         </td>
@@ -191,14 +191,14 @@ export default class ManageAdmin extends React.Component<Props, State> {
                         </Table>
                     </Modal.Body>
                     <Modal.Footer style={{ justifyContent: "flex-end" }}>
-                        <Button variant="secondary" onClick={() => { this.setState({ removeAdminUsernames: [], showHideRemove: false }) }}>
+                        <Button variant="secondary" onClick={() => { this.setState({ removeAdminUserIds: [], showHideRemove: false }) }}>
                             Cancel and close this window
                         </Button>
                         {
-                            this.state.removeAdminUsernames ? (
+                            this.state.removeAdminUserIds ? (
                                 <Button variant="primary" onClick={() => {
-                                    playlistMap[playlist.id].admins = playlist.admins.filter(admin => !this.state.removeAdminUsernames.includes(admin));
-                                    this.setState({removeAdminUsernames: [], showHideRemove: false});
+                                    playlistMap[playlist.id].admins = playlist.admins.filter(admin => !this.state.removeAdminUserIds.includes(admin));
+                                    this.setState({removeAdminUserIds: [], showHideRemove: false});
                                 }}>
                                     Finish removing administrators
                                 </Button>

@@ -20,10 +20,10 @@ import Callback from "./pages/callback";
 interface State {
     showHide: boolean;
     loggedInUser: User | null;
-    inputUsername: string;
+    inputUserId: string;
     inputPassword: string;
     loginCallback?: () => void;
-    error: "username" | "password" | "not-filled" | "";
+    error: "userId" | "password" | "not-filled" | "";
 }
 
 class PLAYLISTS_APP extends React.Component<{}, State> {
@@ -34,7 +34,7 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
         this.state = {
             showHide: false,
             loggedInUser: null,
-            inputUsername: "",
+            inputUserId: "",
             inputPassword: "",
             error: ""
         }
@@ -49,10 +49,10 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
         };
     }
 
-    handleLoginInput(type: 'username' | 'password'): (event: ChangeEvent<HTMLInputElement>) => void {
-        if (type === "username") {
+    handleLoginInput(type: 'userId' | 'password'): (event: ChangeEvent<HTMLInputElement>) => void {
+        if (type === "userId") {
             return (event: ChangeEvent<HTMLInputElement>) => {
-                this.setState({inputUsername: event.target.value, error: ""})
+                this.setState({inputUserId: event.target.value, error: ""})
             }
         } else {
             return (event: ChangeEvent<HTMLInputElement>) => {
@@ -62,8 +62,8 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
     }
 
     handleLoginSubmission(): void {
-        if (this.state.inputUsername && this.state.inputPassword) {
-            if (this.state.inputPassword.toLowerCase() === "password" && this.state.inputUsername.toLowerCase() === "hci2021") {
+        if (this.state.inputUserId && this.state.inputPassword) {
+            if (this.state.inputPassword.toLowerCase() === "password" && this.state.inputUserId.toLowerCase() === "hci2021") {
                 if (this.state.loginCallback !== undefined) {
                     this.state.loginCallback();
                 }
@@ -71,15 +71,15 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
                     loggedInUser: userMap['hci2021'],
                     showHide: false,
                     inputPassword: "",
-                    inputUsername: "",
+                    inputUserId: "",
                     loginCallback: undefined
                 });
             } else {
-                if (this.state.inputUsername.toLowerCase() !== "hci2021") {
+                if (this.state.inputUserId.toLowerCase() !== "hci2021") {
                     this.setState({
                         inputPassword: "",
-                        inputUsername: "",
-                        error: "username"
+                        inputUserId: "",
+                        error: "userId"
                     })
                 } else {
                     this.setState({
@@ -123,13 +123,13 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
 
                         {/*@ts-ignore */}
                         <Route path="/playlist/:playlistId" component={({ match }) =>
-                                   <PlaylistPage loggedInUsername={loggedInUser ? loggedInUser.userId : undefined} match={match} toggleLoginModal={this.handleModalShowHide} />
+                                   <PlaylistPage loggedInUserId={loggedInUser ? loggedInUser.userId : undefined} match={match} toggleLoginModal={this.handleModalShowHide} />
                                }
                                exact
                         />
                         {/*@ts-ignore */}
                         <Route path="/playlist/:playlistId/requests" component={({ match, location, history }) =>
-                                   <RequestsPage loggedInUsername={loggedInUser ? loggedInUser.userId : undefined}
+                                   <RequestsPage loggedInUserId={loggedInUser ? loggedInUser.userId : undefined}
                                                  match={match}
                                                  location={location}
                                                  history={history}
@@ -139,7 +139,7 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
                         />
 
                         {/* Route to User profile page */}
-                        <Route path="/user/:username" component={UserProfile} exact/>
+                        <Route path="/user/:userId" component={UserProfile} exact/>
 
                         {/* Route to Manage admins page */}
                         <Route path="/playlist/:playlistId/admins" component={ManageAdmin} exact/>
@@ -153,11 +153,11 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
-                            <Form.Group controlId="formUsername">
-                                <Form.Label>Username</Form.Label>
-                                <Form.Control type="text" placeholder="Enter username..." value={this.state.inputUsername} onChange={this.handleLoginInput('username')} isInvalid={this.state.error === "username"} />
+                            <Form.Group controlId="formUserId">
+                                <Form.Label>UserId</Form.Label>
+                                <Form.Control type="text" placeholder="Enter userId..." value={this.state.inputUserId} onChange={this.handleLoginInput('userId')} isInvalid={this.state.error === "userId"} />
                                 <Form.Control.Feedback type="invalid">
-                                    Username not found, please try again.
+                                    UserId not found, please try again.
                                 </Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group controlId="formPassword">
@@ -180,7 +180,7 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
                         <Button variant="primary" onClick={this.handleLoginSubmission}>
                             Log in
                         </Button>
-                        <Button variant="outline-danger" onClick={() => {this.setState({inputPassword: "", inputUsername: "", showHide: false, loginCallback: undefined})}}>
+                        <Button variant="outline-danger" onClick={() => {this.setState({inputPassword: "", inputUserId: "", showHide: false, loginCallback: undefined})}}>
                             Close this window
                         </Button>
                     </Modal.Footer>

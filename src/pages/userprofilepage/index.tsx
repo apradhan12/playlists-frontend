@@ -6,14 +6,14 @@ import { playlistMap, userMap } from "../../common/data";
 interface Props {
     match: {
         params: {
-            username: string;
+            userId: string;
         }
     }
 }
 
 export default class UserProfile extends React.Component<Props> {
     render() {
-        const user = userMap[this.props.match.params.username];
+        const user = userMap[this.props.match.params.userId];
         const playlists = user.playlistIds.map(id => playlistMap[id]);
         return (
             <Container className="museo-300">
@@ -42,7 +42,7 @@ export default class UserProfile extends React.Component<Props> {
                             <tbody>
                                 {
                                 Array.from(Object.entries(playlistMap))
-                                    .filter(([_, playlist]) => playlist.creator === user.username)
+                                    .filter(([_, playlist]) => playlist.creator === user.userId)
                                     .map(([_, playlist]) => {
                                         return (
                                             <tr key={playlist.id}>

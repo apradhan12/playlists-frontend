@@ -10,7 +10,7 @@ interface UserMap {
 
 export const userMap: UserMap = {
     aaron1200: {
-        username: "aaron1200",
+        userId: "aaron1200",
         displayName: "Aaron Pradhan",
         profilePictureURL: "/aaron1200.jpg",
         playlistIds: ["abc"],
@@ -18,7 +18,7 @@ export const userMap: UserMap = {
         following: 31
     },
     joeiscool: {
-        username: "joeiscool",
+        userId: "joeiscool",
         displayName: "Joe Adams",
         profilePictureURL: "/joe.jpg",
         playlistIds: [],
@@ -26,7 +26,7 @@ export const userMap: UserMap = {
         following: 13
     },
     michelle1721: {
-        username: "michelle1721",
+        userId: "michelle1721",
         displayName: "Michelle Thompson",
         profilePictureURL: "/michelle.jpg",
         playlistIds: [],
@@ -34,7 +34,7 @@ export const userMap: UserMap = {
         following: 101
     },
     noah2111: {
-        username: "noah2111",
+        userId: "noah2111",
         displayName: "Noah Smith",
         profilePictureURL: "/noah.jpg",
         playlistIds: [],
@@ -42,7 +42,7 @@ export const userMap: UserMap = {
         following: 11
     },
     hci2021: {
-        username: "hci2021",
+        userId: "hci2021",
         displayName: "HCI Testing Account",
         profilePictureURL: "/hci.jpg",
         playlistIds: [],

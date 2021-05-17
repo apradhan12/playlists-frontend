@@ -1,5 +1,5 @@
 export interface User {
-    username: string; // unique
+    userId: string; // unique
     displayName: string;
     profilePictureURL: string;
     playlistIds: string[];
@@ -13,8 +13,8 @@ export interface Playlist {
     pictureURL: string;
     description: string;
     songIds: string[];
-    creator: string; // username
-    admins: string[]; // usernames
+    creator: string; // userId
+    admins: string[]; // userIds
     addRequests: SongRequest[];
     removeRequests: SongRequest[];
 }
@@ -30,5 +30,5 @@ export interface Song {
 export interface SongRequest {
     id: string;
     song: Song;
-    usersVoted: string[]; // array of usernames
+    usersVoted: string[]; // array of userIds
 }

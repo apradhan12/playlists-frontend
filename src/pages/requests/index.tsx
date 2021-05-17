@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Alert, Button, Col, Container, Form, FormControl, Modal, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { playlistMap, songMap, userMap } from "../../common/data";
+import { songMap } from "../../common/data";
 import {convertDate, secondsToMinutesString} from "../../common/utils";
 import "./style.css";
 import { ChangeEvent } from 'react';
@@ -13,7 +13,7 @@ interface RequestsTableProps {
     handleAcceptRequest: (requestId: number) => () => void;
     removeVote: (requestId: number) => () => void;
     addVote: (requestId: number) => () => void;
-    loggedInUsername?: string;
+    loggedInUserId?: string;
     toggleLoginModal: (callback?: () => void) => () => void;
 
     areYouAdmin?: boolean;
@@ -55,7 +55,7 @@ class RequestsTable extends Component<RequestsTableProps> {
                                                 Remove Vote for Request
                                             </Button> :
                                             <Button variant="outline-secondary"
-                                                    onClick={this.props.loggedInUsername === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }
+                                                    onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }
                                             >
                                                 Vote for Request
                                             </Button>)
@@ -79,7 +79,7 @@ interface Props {
     location: {
         state?: LocationState;
     },
-    loggedInUsername?: string;
+    loggedInUserId?: string;
     toggleLoginModal: (callback?: () => void) => () => void;
     history: any; // todo fix this
 }
@@ -123,19 +123,19 @@ export interface Playlist {
 }
 
 interface User {
-    username: string; // unique
+    userId: string; // unique
     displayName: string;
     [otherOptions: string]: any;
 }
 
-interface Song {
-    id: string;
-    title: string;
-    artist: string;
-    album: string;
-    duration: number;
-    addedAt?: string;
-}
+// interface Song {
+//     id: string;
+//     title: string;
+//     artist: string;
+//     album: string;
+//     duration: number;
+//     addedAt?: string;
+// }
 
 interface LocationState {
     showAddSong?: boolean;
@@ -187,7 +187,7 @@ export default class RequestsPage extends React.Component<Props, State> {
     removeVote(isAddRequest: boolean) {
         return (requestId: number) => () => {
             // todo: db logic
-            // if (this.props.loggedInUsername !== undefined) {
+            // if (this.props.loggedInUserId !== undefined) {
             //     let requestList;
             //     if (isAddRequest) {
             //         requestList = playlistMap[this.props.match.params.playlistId].addRequests;
@@ -206,7 +206,7 @@ export default class RequestsPage extends React.Component<Props, State> {
     addVote(isAddRequest: boolean) {
         return (requestId: number) => () => {
             // todo: db logic
-            // if (this.props.loggedInUsername !== undefined) {
+            // if (this.props.loggedInUserId !== undefined) {
             //     let requestList;
             //     if (isAddRequest) {
             //         requestList = playlistMap[this.props.match.params.playlistId].addRequests;
@@ -274,7 +274,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                 console.log(`Display name: '${data.owner.display_name}'`);
                 this.setState({
                     creator: {
-                        username: data.owner.id,
+                        userId: data.owner.id,
                         displayName: data.owner.display_name
                     }
                 });
@@ -368,20 +368,20 @@ export default class RequestsPage extends React.Component<Props, State> {
                             this.state.playlist && this.state.creator && <>
                                 Playlist: <Link
                                 to={`/playlist/${this.props.match.params.playlistId}`}>{this.state.playlist.title}</Link> by <Link
-                                to={`/user/${this.state.creator.username}`}>{this.state.creator.displayName}</Link>
+                                to={`/user/${this.state.creator.userId}`}>{this.state.creator.displayName}</Link>
                             </>
                         }
                     </Col>
                     <Col xs={4} className="text-right">
-                        {this.state.creator && this.state.creator.username !== this.props.loggedInUsername && (
+                        {this.state.creator && this.state.creator.userId !== this.props.loggedInUserId && (
                             <div>
                                 <Button variant="outline-primary" className="museo-300 mb-2"
-                                        onClick={this.props.loggedInUsername === undefined ? this.props.toggleLoginModal(addRequestCallback) : this.toggleAddSong}>
+                                        onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(addRequestCallback) : this.toggleAddSong}>
                                     Request to add a song
                                 </Button>
                                 <br />
                                 <Button variant="outline-danger" className="museo-300 mb-2"
-                                        onClick={this.props.loggedInUsername === undefined ? this.props.toggleLoginModal(removeRequestCallback) : this.toggleRemoveSong}>
+                                        onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(removeRequestCallback) : this.toggleRemoveSong}>
                                     Request to remove a song
                                 </Button>
                             </div>
@@ -399,7 +399,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                                        requests={this.state.addRequests || []}
                                        removeVote={this.removeVote(true)}
                                        addVote={this.addVote(true)}
-                                       loggedInUsername={this.props.loggedInUsername}
+                                       loggedInUserId={this.props.loggedInUserId}
                                        toggleLoginModal={this.props.toggleLoginModal}
                         />
                     </Col>
@@ -415,7 +415,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                                        requests={this.state.removeRequests || []}
                                        removeVote={this.removeVote(false)}
                                        addVote={this.addVote(false)}
-                                       loggedInUsername={this.props.loggedInUsername}
+                                       loggedInUserId={this.props.loggedInUserId}
                                        toggleLoginModal={this.props.toggleLoginModal}
                         />
                     </Col>

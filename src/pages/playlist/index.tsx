@@ -12,7 +12,7 @@ interface Props {
             playlistId: string;
         }
     },
-    loggedInUsername?: string;
+    loggedInUserId?: string;
     toggleLoginModal: (callback?: () => void) => () => void;
 }
 
@@ -22,13 +22,13 @@ interface Playlist {
     pictureURL: string;
     description: string;
     // songIds: string[];
-    // creator: string; // username
-    // admins: string[]; // usernames
+    // creator: string; // userId
+    // admins: string[]; // userIds
     [otherOptions: string]: any;
 }
 
 interface User {
-    username: string; // unique
+    userId: string; // unique
     displayName: string;
     [otherOptions: string]: any;
 }
@@ -76,7 +76,7 @@ export default function PlaylistPage(props: Props) {
 
                     console.log(`Display name: '${data.owner.display_name}'`);
                     setCreator({
-                        username: data.owner.id,
+                        userId: data.owner.id,
                         displayName: data.owner.display_name
                     });
 
@@ -140,7 +140,7 @@ export default function PlaylistPage(props: Props) {
                     <p className="museo-display-light m-0">Playlist</p>
                     <h1 className="museo-display-black">{playlist ? playlist.title : ""}</h1>
                     {
-                        creator && <p className="museo-300 mb-0">Created by <Link to={`/user/${creator.username}`}>{creator.displayName}</Link></p>
+                        creator && <p className="museo-300 mb-0">Created by <Link to={`/user/${creator.userId}`}>{creator.displayName}</Link></p>
                     }
                     <p className="museo-300 italic">{songs.length} {songs.length === 1 ? "song" : "songs"}, {secondsToHoursString(sum(songs.map(song => song.duration)))}</p>
                     <Button 
@@ -158,8 +158,8 @@ export default function PlaylistPage(props: Props) {
                 <Col xs={4} className="text-right">
                     {
                         creator && playlist && <>
-                            {/* TODO: This should be based on areYouAdmin, not creator.username */}
-                            { (creator.username === props.loggedInUsername) ? (
+                            {/* TODO: This should be based on areYouAdmin, not creator.userId */}
+                            { (creator.userId === props.loggedInUserId) ? (
                                 <div>
                                     <Link to={`/playlist/${playlist.id}/requests`}>
                                         <Button variant="primary" className="museo-300 mb-2">Manage Song Requests</Button><br />
@@ -171,12 +171,12 @@ export default function PlaylistPage(props: Props) {
                             ) : (
                                 <div>
                                     <Button variant="outline-primary" className="museo-300 mb-2"
-                                            onClick={props.loggedInUsername === undefined ? props.toggleLoginModal(addRequestCallback) : addRequestCallback}>
+                                            onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(addRequestCallback) : addRequestCallback}>
                                         Request to add a song
                                     </Button>
                                     <br />
                                     <Button variant="outline-danger" className="museo-300 mb-2"
-                                            onClick={props.loggedInUsername === undefined ? props.toggleLoginModal(removeRequestCallback) : removeRequestCallback}>
+                                            onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(removeRequestCallback) : removeRequestCallback}>
                                         Request to remove a song
                                     </Button>
                                     <Link to={`/playlist/${playlist.id}/requests`}>
