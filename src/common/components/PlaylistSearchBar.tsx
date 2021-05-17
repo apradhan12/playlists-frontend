@@ -75,7 +75,7 @@ export default class PlaylistSearchBar extends Component<Props, State>  {
                                             role="button"
                                             style={{display: "table-row"}}
                                             onClick={() => { 
-                                              window.location.href = `#/playlist/${playlist.id}`
+                                              window.location.href = `/playlist/${playlist.id}`
                                               this.setState({searchFocused: false, searchQuery: ""}); 
                                             }}
                                             key={playlist.id}

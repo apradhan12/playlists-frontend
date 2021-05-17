@@ -19,7 +19,7 @@ export default class UserProfile extends React.Component<Props> {
             <Container className="museo-300">
                 <Row className="my-4">
                     <Col xs={4}>
-                        <Image src={process.env.PUBLIC_URL + user.profilePictureURL} alt={`${user.displayName}'s profile`} fluid />
+                        <Image src={user.profilePictureURL} alt={`${user.displayName}'s profile`} fluid />
                     </Col>
                     <Col xs={8}>
                         <h1 className="museo-display-black">{user.displayName}</h1>

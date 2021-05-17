@@ -158,6 +158,7 @@ export default function PlaylistPage(props: Props) {
                 <Col xs={4} className="text-right">
                     {
                         creator && playlist && <>
+                            {/* TODO: This should be based on areYouAdmin, not creator.username */}
                             { (creator.username === props.loggedInUsername) ? (
                                 <div>
                                     <Link to={`/playlist/${playlist.id}/requests`}>

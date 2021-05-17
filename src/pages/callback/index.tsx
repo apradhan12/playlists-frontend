@@ -3,6 +3,9 @@ import {Component} from "react";
 interface Params {
     access_token: string;
     refresh_token: string;
+    user_id: string;
+    display_name: string;
+    profile_picture_url: string;
 }
 
 class Callback extends Component<{}, {}> {
@@ -23,7 +26,10 @@ class Callback extends Component<{}, {}> {
             }, {});
         localStorage.setItem("sp-accessToken", queryParams.access_token);
         localStorage.setItem("sp-refreshToken", queryParams.refresh_token);
-        window.close();
+        localStorage.setItem("sp-userId", queryParams.user_id);
+        localStorage.setItem("sp-displayName", queryParams.display_name);
+        localStorage.setItem("sp-profilePictureURL", decodeURIComponent(queryParams.profile_picture_url));
+        // window.close();
     }
 
     render() {

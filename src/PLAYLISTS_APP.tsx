@@ -97,7 +97,20 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
 
     render() {
 
-        let { loggedInUser } = this.state;
+        // let { loggedInUser } = this.state;
+        let loggedInUser: any | null;
+        const accessToken = localStorage.getItem("sp-accessToken");
+        if (accessToken === null) {
+            loggedInUser = null;
+        } else {
+            loggedInUser = {
+                accessToken: accessToken,
+                refreshToken: localStorage.getItem("sp-refreshToken"),
+                userId: localStorage.getItem("sp-userId"),
+                displayName: localStorage.getItem("sp-displayName"),
+                profilePictureURL: localStorage.getItem("sp-profilePictureURL")
+            };
+        }
 
         return (
             <div>
@@ -110,13 +123,13 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
 
                         {/*@ts-ignore */}
                         <Route path="/playlist/:playlistId" component={({ match }) =>
-                                   <PlaylistPage loggedInUsername={loggedInUser ? loggedInUser.username : undefined} match={match} toggleLoginModal={this.handleModalShowHide} />
+                                   <PlaylistPage loggedInUsername={loggedInUser ? loggedInUser.userId : undefined} match={match} toggleLoginModal={this.handleModalShowHide} />
                                }
                                exact
                         />
                         {/*@ts-ignore */}
                         <Route path="/playlist/:playlistId/requests" component={({ match, location, history }) =>
-                                   <RequestsPage loggedInUsername={loggedInUser ? loggedInUser.username : undefined}
+                                   <RequestsPage loggedInUsername={loggedInUser ? loggedInUser.userId : undefined}
                                                  match={match}
                                                  location={location}
                                                  history={history}
