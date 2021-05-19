@@ -121,6 +121,9 @@ class Homepage extends React.Component<Props, State> {
                         <h1 className="museo-display-black mb-3">
                             Spotify Collaborative Playlists
                         </h1>
+                        {
+                            (localStorage.getItem("sp-accessToken") === null) && <p>Click "Log in with Spotify" to start.</p>
+                        }
                         {/*<PlaylistSearchBar placeholder="Search for playlists..." dark={true}/>*/}
                     </Col>
                 </Row>

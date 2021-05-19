@@ -131,17 +131,17 @@ export default function PlaylistPage(props: Props) {
                             // ) :
                                     (
                                 <div>
-                                    <Button variant="outline-primary" className="museo-300 mb-2">
-                                        {/*onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(addRequestCallback) : addRequestCallback}*/}
-                                        Request to add a song
-                                    </Button>
-                                    <br />
-                                    <Button variant="outline-danger" className="museo-300 mb-2">
-                                        {/*onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(removeRequestCallback) : removeRequestCallback}*/}
-                                        Request to remove a song
-                                    </Button>
+                                    {/*<Button variant="outline-primary" className="museo-300 mb-2">*/}
+                                    {/*    /!*onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(addRequestCallback) : addRequestCallback}*!/*/}
+                                    {/*    Request to add a song*/}
+                                    {/*</Button>*/}
+                                    {/*<br />*/}
+                                    {/*<Button variant="outline-danger" className="museo-300 mb-2">*/}
+                                    {/*    /!*onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(removeRequestCallback) : removeRequestCallback}*!/*/}
+                                    {/*    Request to remove a song*/}
+                                    {/*</Button>*/}
                                     <Link to={`/playlist/${playlist.id}/requests`}>
-                                        <Button variant="outline-secondary" className="museo-300 mb-2">View song requests</Button><br />
+                                        <Button variant="outline-primary" className="museo-300 mb-2">View song requests</Button><br />
                                     </Link>
                                     {/*<p className="museo-300 mb-2">If you're an admin of this playlist, log in to manage song requests.</p>*/}
                                 </div>

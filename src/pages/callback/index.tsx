@@ -29,6 +29,7 @@ class Callback extends Component<{}, {}> {
         localStorage.setItem("sp-userId", queryParams.user_id);
         localStorage.setItem("sp-displayName", queryParams.display_name);
         localStorage.setItem("sp-profilePictureURL", decodeURIComponent(queryParams.profile_picture_url));
+        window.opener.postMessage("login", "*");
         window.close();
     }
 

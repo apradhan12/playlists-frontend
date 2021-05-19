@@ -46,6 +46,15 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
             error: "",
             appAccessToken: null
         }
+
+        window.addEventListener("message", (event) => {
+            // if (event.origin !== "http://example.org:8080")
+            //     return;
+
+            if (event.data === "login") {
+                window.location.reload();
+            }
+        }, false);
     }
 
     componentDidMount() {
@@ -89,6 +98,7 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
                         {/*@ts-ignore */}
                         <Route path="/playlist/:playlistId/requests" component={({ match, location, history }) =>
                                    <RequestsPage loggedInUserId={this.state.loggedInUser ? this.state.loggedInUser.userId : null}
+                                                 appAccessToken={this.state.appAccessToken}
                                                  match={match}
                                                  location={location}
                                                  history={history} />
