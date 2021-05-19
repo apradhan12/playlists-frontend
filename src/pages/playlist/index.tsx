@@ -1,6 +1,5 @@
 import React, {useEffect} from 'react';
 import {Button, Col, Container, Row, Table, Image} from "react-bootstrap";
-import {playlistMap, songMap, userMap} from "../../common/data";
 import {convertDate, secondsToHoursString, secondsToMinutesString, sum} from "../../common/utils";
 import {Link} from "react-router-dom";
 import {useHistory} from "react-router";
@@ -50,71 +49,62 @@ export default function PlaylistPage(props: Props) {
     const [songs, setSongs] = React.useState<Song[]>([]);
 
     useEffect(() => {
-        if (playlistMap.hasOwnProperty(props.match.params.playlistId)) {
-            const localPlaylist = playlistMap[props.match.params.playlistId];
-            const localOwner = userMap[localPlaylist.owner];
-            const localSongs = localPlaylist.songIds.map((id: string) => songMap[id]);
-            setPlaylist(localPlaylist)
-            setOwner(localOwner);
-            setSongs(localSongs);
-        } else {
-            const accessToken = localStorage.getItem("sp-accessToken") || props.appAccessToken;
-            if (accessToken !== null) {
-                axios.get(`https://api.spotify.com/v1/playlists/${props.match.params.playlistId}`, {
-                    headers: {
-                        'Authorization': 'Bearer ' + accessToken
-                    }
-                }).then(response => {
-                    const data = response.data;
-                    setPlaylist({
-                        id: props.match.params.playlistId,
-                        title: data.name,
-                        pictureURL: data.images[0].url,
-                        description: data.description,
-                        isExternal: true
-                    });
-
-                    console.log(`Display name: '${data.owner.display_name}'`);
-                    setOwner({
-                        userId: data.owner.id,
-                        displayName: data.owner.display_name
-                    });
-
-                    function getSongsFromTracks(tracks: any) {
-                        return tracks.items.map((item: any) => ({
-                            id: item.track.id,
-                            title: item.track.name,
-                            artist: item.track.artists.map((artist: any) => artist.name).join(", "),
-                            album: item.track.album.name,
-                            duration: Math.floor(item.track.duration_ms / 1000),
-                            addedAt: item.added_at
-                        }));
-                        // TODO: use milliseconds for duration (more accurate)
-                    }
-
-                    function addSongs(tracks: any) {
-                        setSongs(prevSongs => prevSongs.concat(getSongsFromTracks(tracks)));
-                        if (tracks.total > tracks.limit + tracks.offset) {
-                            console.log(`Querying ${tracks.next}`);
-                            axios.get(tracks.next, {
-                                headers: {
-                                    'Authorization': 'Bearer ' + accessToken
-                                }
-                            }).then(response => {
-                                const newTracks = response.data;
-                                // console.log(JSON.stringify(newTracks));
-                                addSongs(newTracks);
-                            });
-                        }
-                    }
-                    setSongs([]);
-                    addSongs(data.tracks);
+        const accessToken = localStorage.getItem("sp-accessToken") || props.appAccessToken;
+        if (accessToken !== null) {
+            axios.get(`https://api.spotify.com/v1/playlists/${props.match.params.playlistId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                }
+            }).then(response => {
+                const data = response.data;
+                setPlaylist({
+                    id: props.match.params.playlistId,
+                    title: data.name,
+                    pictureURL: data.images[0].url,
+                    description: data.description,
+                    isExternal: true
                 });
-            }
-            // const playlist = playlistMap[props.match.params.playlistId];
-            // const owner = userMap[playlist.owner];
-            // const songs = playlist.songIds.map(id => songMap[id]);
+
+                console.log(`Display name: '${data.owner.display_name}'`);
+                setOwner({
+                    userId: data.owner.id,
+                    displayName: data.owner.display_name
+                });
+
+                function getSongsFromTracks(tracks: any) {
+                    return tracks.items.map((item: any) => ({
+                        id: item.track.id,
+                        title: item.track.name,
+                        artist: item.track.artists.map((artist: any) => artist.name).join(", "),
+                        album: item.track.album.name,
+                        duration: Math.floor(item.track.duration_ms / 1000),
+                        addedAt: item.added_at
+                    }));
+                    // TODO: use milliseconds for duration (more accurate)
+                }
+
+                function addSongs(tracks: any) {
+                    setSongs(prevSongs => prevSongs.concat(getSongsFromTracks(tracks)));
+                    if (tracks.total > tracks.limit + tracks.offset) {
+                        console.log(`Querying ${tracks.next}`);
+                        axios.get(tracks.next, {
+                            headers: {
+                                'Authorization': 'Bearer ' + accessToken
+                            }
+                        }).then(response => {
+                            const newTracks = response.data;
+                            // console.log(JSON.stringify(newTracks));
+                            addSongs(newTracks);
+                        });
+                    }
+                }
+                setSongs([]);
+                addSongs(data.tracks);
+            });
         }
+        // const playlist = playlistMap[props.match.params.playlistId];
+        // const owner = userMap[playlist.owner];
+        // const songs = playlist.songIds.map(id => songMap[id]);
     }, [props.match.params.playlistId, props.appAccessToken]);
 
     const addRequestCallback = () => history.push({
@@ -140,7 +130,11 @@ export default function PlaylistPage(props: Props) {
                     <p className="museo-display-light m-0">Playlist</p>
                     <h1 className="museo-display-black">{playlist ? playlist.title : ""}</h1>
                     {
-                        owner && <p className="museo-300 mb-0">Created by <Link to={`/user/${owner.userId}`}>{owner.displayName}</Link></p>
+                        owner && <p className="museo-300 mb-0">Created by&nbsp;
+                            {/*<Link to={`/user/${owner.userId}`}>*/}
+                                {owner.displayName}
+                            {/*</Link>*/}
+                        </p>
                     }
                     <p className="museo-300 italic">{songs.length} {songs.length === 1 ? "song" : "songs"}, {secondsToHoursString(sum(songs.map(song => song.duration)))}</p>
                     <Button 
@@ -159,16 +153,18 @@ export default function PlaylistPage(props: Props) {
                     {
                         owner && playlist && <>
                             {/* TODO: This should be based on areYouAdmin, not owner.userId */}
-                            { (owner.userId === props.loggedInUserId) ? (
-                                <div>
-                                    <Link to={`/playlist/${playlist.id}/requests`}>
-                                        <Button variant="primary" className="museo-300 mb-2">Manage Song Requests</Button><br />
-                                    </Link>
-                                    <Link to={`/playlist/${playlist.id}/admins`}>
-                                        <Button variant="outline-secondary" className="museo-300 mb-2">Manage Administrators</Button><br />
-                                    </Link>
-                                </div>
-                            ) : (
+                            {
+                            //     (owner.userId === props.loggedInUserId) ? (
+                            //     <div>
+                            //         <Link to={`/playlist/${playlist.id}/requests`}>
+                            //             <Button variant="primary" className="museo-300 mb-2">Manage Song Requests</Button><br />
+                            //         </Link>
+                            //         <Link to={`/playlist/${playlist.id}/admins`}>
+                            //             <Button variant="outline-secondary" className="museo-300 mb-2">Manage Administrators</Button><br />
+                            //         </Link>
+                            //     </div>
+                            // ) :
+                                    (
                                 <div>
                                     <Button variant="outline-primary" className="museo-300 mb-2">
                                         {/*onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(addRequestCallback) : addRequestCallback}*/}
@@ -182,7 +178,7 @@ export default function PlaylistPage(props: Props) {
                                     <Link to={`/playlist/${playlist.id}/requests`}>
                                         <Button variant="outline-secondary" className="museo-300 mb-2">View song requests</Button><br />
                                     </Link>
-                                    <p className="museo-300 mb-2">If you're an admin of this playlist, log in to manage song requests.</p>
+                                    {/*<p className="museo-300 mb-2">If you're an admin of this playlist, log in to manage song requests.</p>*/}
                                 </div>
                             )}
                         </>
