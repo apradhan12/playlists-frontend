@@ -81,6 +81,7 @@ interface Props {
     },
     loggedInUserId: string | null;
     history: any; // todo fix this
+    appAccessToken: string | null;
 }
 
 interface State {
@@ -168,6 +169,7 @@ export default class RequestsPage extends React.Component<Props, State> {
         this.handleAcceptRemoveRequest = this.handleAcceptRemoveRequest.bind(this);
         this.removeVote = this.removeVote.bind(this);
         this.addVote = this.addVote.bind(this);
+        this.populateRequests = this.populateRequests.bind(this);
     }
 
     toggleAddSong() {
@@ -267,14 +269,42 @@ export default class RequestsPage extends React.Component<Props, State> {
         }
     }
 
+    populateRequests(accessToken: string) {
+
+        axios.get(`http://localhost:8888/playlists/${this.props.match.params.playlistId}/requests`, {
+            headers: {
+                'Authorization': 'Bearer ' + accessToken
+            }
+        }).then(response => {
+
+            interface SongRequestList {
+                areYouAdmin: boolean;
+                addRequests: SongRequest[];
+                removeRequests: SongRequest[];
+            }
+
+            const data: SongRequestList = response.data;
+            // TODO: create types (just copy/paste from types.ts and modify to use nullable/optional)
+            // TODO: convert playlist, songs, owner consts in render() method to tolerate undefined,
+            // and use state instead of these consts
+            // TODO: translate API response properties into the needed data
+            this.setState({
+                areYouAdmin: data.areYouAdmin,
+                addRequests: data.addRequests,
+                removeRequests: data.removeRequests
+            });
+        });
+    }
+
     componentDidMount() {
-        const accessToken = localStorage.getItem("sp-accessToken");
+        const accessToken = localStorage.getItem("sp-accessToken") || this.props.appAccessToken;
         if (accessToken !== null) {
             axios.get(`https://api.spotify.com/v1/playlists/${this.props.match.params.playlistId}`, {
                 headers: {
                     'Authorization': 'Bearer ' + accessToken
                 }
             }).then(response => {
+                // todo: catch private playlists?
                 const data = response.data;
                 this.setState({
                     playlist: {
@@ -310,42 +340,11 @@ export default class RequestsPage extends React.Component<Props, State> {
                 addSongs(setSongs, accessToken, data.tracks);
             });
 
-            axios.get(`http://localhost:8888/playlists/${this.props.match.params.playlistId}/requests`, {
-                headers: {
-                    'Authorization': 'Bearer ' + accessToken
-                }
-            }).then(response => {
-
-                interface SongRequestList {
-                    areYouAdmin: boolean;
-                    addRequests: SongRequest[];
-                    removeRequests: SongRequest[];
-                }
-
-                const data: SongRequestList = response.data;
-                // TODO: create types (just copy/paste from types.ts and modify to use nullable/optional)
-                // TODO: convert playlist, songs, owner consts in render() method to tolerate undefined,
-                // and use state instead of these consts
-                // TODO: translate API response properties into the needed data
-                this.setState({
-                    areYouAdmin: data.areYouAdmin,
-                    addRequests: data.addRequests,
-                    removeRequests: data.removeRequests
-                });
-            });
+            this.populateRequests(accessToken);
         }
-        // const playlist = playlistMap[props.match.params.playlistId];
-        // const owner = userMap[playlist.owner];
-        // const songs = playlist.songIds.map(id => songMap[id]);
     }
 
     render() {
-        // const playlist = playlistMap[this.props.match.params.playlistId];
-        // const owner = userMap[playlist.owner];
-        // // const songs = playlist.songIds.map(id => songMap[id]);
-        // const addRequests = playlist.addRequests;
-        // const removeRequests = playlist.removeRequests;
-
         // replace instead of push because you can't push the same path
         const addRequestCallback = () => this.props.history.replace({
             state: {showAddSong: true}
@@ -371,15 +370,16 @@ export default class RequestsPage extends React.Component<Props, State> {
                         }
                     }).then(response => {
                         console.log("success");
+                        this.populateRequests(localStorage.getItem("sp-accessToken")!!);
+                        // todo: make the "recentAddSongRequest" a callback for after the requests have been populated?
+                        this.setState({addSearchQuery: "", addSearchFocused: false, selectedAddSong: null, showAddSong: false, recentAddSongRequest: true});
+                        // todo don't do this unless there's a selected add song
+                        setTimeout(function() {
+                            //@ts-ignore (sorry!)
+                            this.setState({recentAddSongRequest: false})
+                        }.bind(this), 3000);
                     }); // todo catch
                 }
-                // this.state.playlist.addRequests.push({id: `r${this.state.playlist.addRequests.length + 1}`, song: this.state.selectedAddSong, usersVoted: ["hci2021"]});
-                this.setState({addSearchQuery: "", addSearchFocused: false, selectedAddSong: null, showAddSong: false, recentAddSongRequest: true});
-                // todo don't do this unless there's a selected add song
-                setTimeout(function() {
-                    //@ts-ignore (sorry!)
-                    this.setState({recentAddSongRequest: false})
-                }.bind(this), 3000);
             }
         };
 
@@ -399,16 +399,16 @@ export default class RequestsPage extends React.Component<Props, State> {
                 }).then(response => {
                     console.log("success");
                     console.log(response);
+                    // todo: make the "recentAddSongRequest" a callback for after the requests have been populated?
+                    this.populateRequests(localStorage.getItem("sp-accessToken")!!);
+
+                    // todo: should I move this out of the "then" block?
+                    this.setState({addSearchQuery: "", addSearchFocused: false, removeSongIds: [], showAddSong: false, recentRemoveSongRequest: true, showRemoveSong: false});
+                    setTimeout(function() {
+                        //@ts-ignore (sorry!)
+                        this.setState({recentRemoveSongRequest: false})
+                    }.bind(this), 3000);
                 });
-                // this.state.removeSongIds.forEach(element => {
-                //     this.state.playlist.removeRequests.push({id: `r${this.state.playlist.removeRequests.length + 1}`, song: songMap[element], usersVoted: ["hci2021"]});
-                // });
-                // this.setState({addSearchQuery: "", addSearchFocused: false, removeSongIds: [], showAddSong: false, recentRemoveSongRequest: true});
-                // setTimeout(function() {
-                //     //@ts-ignore (sorry!)
-                //     this.setState({recentRemoveSongRequest: false})
-                // }.bind(this), 3000)
-                this.toggleRemoveSong();
             }
         };
 
@@ -615,6 +615,9 @@ export default class RequestsPage extends React.Component<Props, State> {
                         </Table>
                     </Modal.Body>
                     <Modal.Footer style={{ justifyContent: "flex-end" }}>
+                        <Button variant="outline-secondary" onClick={this.toggleRemoveSong}>
+                            Cancel and Close
+                        </Button>
                         <Button variant="primary" onClick={finishRequestingSongRemovals}>
                             Finish requesting song removals
                         </Button>
