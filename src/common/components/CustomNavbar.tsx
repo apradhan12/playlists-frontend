@@ -4,7 +4,6 @@ import PlaylistSearchBar from './PlaylistSearchBar'
 
 interface CustomNavbarProps {
     user: any | null; // todo
-    toggleLoginModal: (callback?: () => void) => () => void;
 }
 
 interface CustomNavbarState {

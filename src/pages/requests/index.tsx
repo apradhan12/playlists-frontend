@@ -12,8 +12,7 @@ interface RequestsTableProps {
     handleAcceptRequest: (requestId: number) => () => void;
     removeVote: (requestId: number) => () => void;
     addVote: (requestId: number) => () => void;
-    loggedInUserId?: string;
-    toggleLoginModal: (callback?: () => void) => () => void;
+    loggedInUserId: string | null;
 
     areYouAdmin?: boolean;
 }
@@ -46,18 +45,18 @@ class RequestsTable extends Component<RequestsTableProps> {
                                 <td>{secondsToMinutesString(Math.floor(request.duration / 1000))}</td>
                                 <td>{request.numVotes}</td>
                                 <td>
-                                    {this.props.areYouAdmin ? <Button variant="primary"
-                                                                           onClick={this.props.handleAcceptRequest(request.requestId)}>Accept
-                                            Request</Button> :
-                                        (request.hasYourVote ?
-                                            <Button variant="outline-secondary" onClick={this.props.removeVote(request.requestId)}>
-                                                Remove Vote for Request
-                                            </Button> :
-                                            <Button variant="outline-secondary"
-                                                    onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }
-                                            >
-                                                Vote for Request
-                                            </Button>)
+                                    { // onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }
+                                        this.props.areYouAdmin ? <Button variant="primary"
+                                                                         onClick={this.props.handleAcceptRequest(request.requestId)}>Accept
+                                                Request</Button> :
+                                            (request.hasYourVote ?
+                                                <Button variant="outline-secondary"
+                                                        onClick={this.props.removeVote(request.requestId)}>
+                                                    Remove Vote for Request
+                                                </Button> :
+                                                <Button variant="outline-secondary">
+                                                    Vote for Request
+                                                </Button>)
                                     }
                                 </td>
                             </tr>
@@ -78,8 +77,7 @@ interface Props {
     location: {
         state?: LocationState;
     },
-    loggedInUserId?: string;
-    toggleLoginModal: (callback?: () => void) => () => void;
+    loggedInUserId: string | null;
     history: any; // todo fix this
 }
 
@@ -413,13 +411,13 @@ export default class RequestsPage extends React.Component<Props, State> {
                     <Col xs={4} className="text-right">
                         {this.state.owner && this.state.owner.userId !== this.props.loggedInUserId && (
                             <div>
-                                <Button variant="outline-primary" className="museo-300 mb-2"
-                                        onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(addRequestCallback) : this.toggleAddSong}>
+                                <Button variant="outline-primary" className="museo-300 mb-2">
+                                    {/*onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(addRequestCallback) : this.toggleAddSong}*/}
                                     Request to add a song
                                 </Button>
                                 <br />
-                                <Button variant="outline-danger" className="museo-300 mb-2"
-                                        onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(removeRequestCallback) : this.toggleRemoveSong}>
+                                <Button variant="outline-danger" className="museo-300 mb-2">
+                                    {/*onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(removeRequestCallback) : this.toggleRemoveSong}*/}
                                     Request to remove a song
                                 </Button>
                             </div>
@@ -438,7 +436,6 @@ export default class RequestsPage extends React.Component<Props, State> {
                                        removeVote={this.removeVote(true)}
                                        addVote={this.addVote(true)}
                                        loggedInUserId={this.props.loggedInUserId}
-                                       toggleLoginModal={this.props.toggleLoginModal}
                         />
                     </Col>
                 </Row>
@@ -454,7 +451,6 @@ export default class RequestsPage extends React.Component<Props, State> {
                                        removeVote={this.removeVote(false)}
                                        addVote={this.addVote(false)}
                                        loggedInUserId={this.props.loggedInUserId}
-                                       toggleLoginModal={this.props.toggleLoginModal}
                         />
                     </Col>
                 </Row>

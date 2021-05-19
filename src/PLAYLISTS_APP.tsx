@@ -1,5 +1,5 @@
-import React, { ChangeEvent } from 'react';
-import {Button, Container, Modal} from 'react-bootstrap';
+import React from 'react';
+import {Container} from 'react-bootstrap';
 import {BrowserRouter as Router, Route} from 'react-router-dom'
 import CustomNavbar from './common/components/CustomNavbar';
 
@@ -11,10 +11,8 @@ import RequestsPage from "./pages/requests";
 import UserProfile from './pages/userprofilepage';
 import ManageAdmin from './pages/manageadministrators';
 
-import { User } from './common/types';
-import { Form } from 'react-bootstrap';
-import { userMap } from './common/data';
 import Callback from "./pages/callback";
+import axios from "axios";
 
 
 interface State {
@@ -24,6 +22,15 @@ interface State {
     inputPassword: string;
     loginCallback?: () => void;
     error: "userId" | "password" | "not-filled" | "";
+    appAccessToken: string | null;
+}
+
+interface User {
+    accessToken: string;
+    refreshToken: string;
+    userId: string;
+    displayName: string;
+    profilePictureURL: string;
 }
 
 class PLAYLISTS_APP extends React.Component<{}, State> {
@@ -36,85 +43,35 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
             loggedInUser: null,
             inputUserId: "",
             inputPassword: "",
-            error: ""
-        }
-
-        this.handleModalShowHide = this.handleModalShowHide.bind(this);
-        this.handleLoginSubmission = this.handleLoginSubmission.bind(this);
-    }
-
-    handleModalShowHide(callback?: () => void): () => void {
-        return () => {
-            this.setState(prevState => ({ showHide: !prevState.showHide, loginCallback: callback }));
-        };
-    }
-
-    handleLoginInput(type: 'userId' | 'password'): (event: ChangeEvent<HTMLInputElement>) => void {
-        if (type === "userId") {
-            return (event: ChangeEvent<HTMLInputElement>) => {
-                this.setState({inputUserId: event.target.value, error: ""})
-            }
-        } else {
-            return (event: ChangeEvent<HTMLInputElement>) => {
-                this.setState({inputPassword: event.target.value, error: ""})
-            }
+            error: "",
+            appAccessToken: null
         }
     }
 
-    handleLoginSubmission(): void {
-        if (this.state.inputUserId && this.state.inputPassword) {
-            if (this.state.inputPassword.toLowerCase() === "password" && this.state.inputUserId.toLowerCase() === "hci2021") {
-                if (this.state.loginCallback !== undefined) {
-                    this.state.loginCallback();
-                }
-                this.setState({
-                    loggedInUser: userMap['hci2021'],
-                    showHide: false,
-                    inputPassword: "",
-                    inputUserId: "",
-                    loginCallback: undefined
-                });
-            } else {
-                if (this.state.inputUserId.toLowerCase() !== "hci2021") {
-                    this.setState({
-                        inputPassword: "",
-                        inputUserId: "",
-                        error: "userId"
-                    })
-                } else {
-                    this.setState({
-                        inputPassword: "",
-                        error: "password"
-                    })
-                }
-            }
+    componentDidMount() {
+        const localStorageKeys = ["sp-accessToken", "sp-refreshToken", "sp-userId", "sp-displayName", "sp-profilePictureURL"];
+        const localStorageValues = localStorageKeys.map(key => localStorage.getItem(key));
+        if (localStorageValues.some(value => value === null)) {
+            this.setState({loggedInUser: null});
+            axios.get("http://localhost:8888/client_credentials")
+                .then(response => this.setState({appAccessToken: response.data.access_token}));
         } else {
             this.setState({
-                error: "not-filled"
-            })
+                loggedInUser: {
+                    accessToken: localStorageValues[0]!!,
+                    refreshToken: localStorageValues[1]!!,
+                    userId: localStorageValues[2]!!,
+                    displayName: localStorageValues[3]!!,
+                    profilePictureURL: localStorageValues[4]!!
+                }
+            });
         }
     }
 
     render() {
-
-        // let { loggedInUser } = this.state;
-        let loggedInUser: any | null;
-        const accessToken = localStorage.getItem("sp-accessToken");
-        if (accessToken === null) {
-            loggedInUser = null;
-        } else {
-            loggedInUser = {
-                accessToken: accessToken,
-                refreshToken: localStorage.getItem("sp-refreshToken"),
-                userId: localStorage.getItem("sp-userId"),
-                displayName: localStorage.getItem("sp-displayName"),
-                profilePictureURL: localStorage.getItem("sp-profilePictureURL")
-            };
-        }
-
         return (
             <div>
-                <CustomNavbar user={loggedInUser} toggleLoginModal={this.handleModalShowHide}/>
+                <CustomNavbar user={this.state.loggedInUser}/>
                 <Container fluid>
                     <Router>
                         <Route path="/" component={Homepage} exact/>
@@ -123,17 +80,18 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
 
                         {/*@ts-ignore */}
                         <Route path="/playlist/:playlistId" component={({ match }) =>
-                                   <PlaylistPage loggedInUserId={loggedInUser ? loggedInUser.userId : undefined} match={match} toggleLoginModal={this.handleModalShowHide} />
+                                   <PlaylistPage loggedInUserId={this.state.loggedInUser ? this.state.loggedInUser.userId : null} match={match}
+                                                 appAccessToken={this.state.appAccessToken}
+                                   />
                                }
                                exact
                         />
                         {/*@ts-ignore */}
                         <Route path="/playlist/:playlistId/requests" component={({ match, location, history }) =>
-                                   <RequestsPage loggedInUserId={loggedInUser ? loggedInUser.userId : undefined}
+                                   <RequestsPage loggedInUserId={this.state.loggedInUser ? this.state.loggedInUser.userId : null}
                                                  match={match}
                                                  location={location}
-                                                 history={history}
-                                                 toggleLoginModal={this.handleModalShowHide} />
+                                                 history={history} />
                                }
                                exact
                         />
@@ -146,45 +104,6 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
 
                         <Route path="/callback" component={Callback} exact />
                     </Router>
-
-                    <Modal show={this.state.showHide} animation={false} backdrop="static" dialogClassName="museo-300">
-                    <Modal.Header onClick={() => this.handleModalShowHide()}>
-                        <Modal.Title className="museo-display-black">Log into your account</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form>
-                            <Form.Group controlId="formUserId">
-                                <Form.Label>UserId</Form.Label>
-                                <Form.Control type="text" placeholder="Enter userId..." value={this.state.inputUserId} onChange={this.handleLoginInput('userId')} isInvalid={this.state.error === "userId"} />
-                                <Form.Control.Feedback type="invalid">
-                                    UserId not found, please try again.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                            <Form.Group controlId="formPassword">
-                                <Form.Label>Password</Form.Label>
-                                <Form.Control type="password" placeholder="Enter password..." value={this.state.inputPassword} onChange={this.handleLoginInput('password')} isInvalid={this.state.error === "password"} />
-                                <Form.Control.Feedback type="invalid">
-                                    Incorrect password, please try again.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                            {
-                                (this.state.error === "not-filled") 
-                                    && 
-                                <p className="text-danger" style={{fontSize: "80%", marginBottom: 0}}>
-                                    Please fill out all login fields.
-                                </p>
-                            }
-                        </Form>
-                    </Modal.Body>
-                    <Modal.Footer style={{justifyContent: "flex-end"}}>
-                        <Button variant="primary" onClick={this.handleLoginSubmission}>
-                            Log in
-                        </Button>
-                        <Button variant="outline-danger" onClick={() => {this.setState({inputPassword: "", inputUserId: "", showHide: false, loginCallback: undefined})}}>
-                            Close this window
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
                 </Container>
             </div>
         );

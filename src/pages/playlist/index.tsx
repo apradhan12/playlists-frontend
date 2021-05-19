@@ -12,8 +12,8 @@ interface Props {
             playlistId: string;
         }
     },
-    loggedInUserId?: string;
-    toggleLoginModal: (callback?: () => void) => () => void;
+    loggedInUserId: string | null;
+    appAccessToken: string | null;
 }
 
 interface Playlist {
@@ -58,7 +58,7 @@ export default function PlaylistPage(props: Props) {
             setOwner(localOwner);
             setSongs(localSongs);
         } else {
-            const accessToken = localStorage.getItem("sp-accessToken");
+            const accessToken = localStorage.getItem("sp-accessToken") || props.appAccessToken;
             if (accessToken !== null) {
                 axios.get(`https://api.spotify.com/v1/playlists/${props.match.params.playlistId}`, {
                     headers: {
@@ -115,7 +115,7 @@ export default function PlaylistPage(props: Props) {
             // const owner = userMap[playlist.owner];
             // const songs = playlist.songIds.map(id => songMap[id]);
         }
-    }, [props.match.params.playlistId]);
+    }, [props.match.params.playlistId, props.appAccessToken]);
 
     const addRequestCallback = () => history.push({
         pathname: `/playlist/${props.match.params.playlistId}/requests`,
@@ -170,13 +170,13 @@ export default function PlaylistPage(props: Props) {
                                 </div>
                             ) : (
                                 <div>
-                                    <Button variant="outline-primary" className="museo-300 mb-2"
-                                            onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(addRequestCallback) : addRequestCallback}>
+                                    <Button variant="outline-primary" className="museo-300 mb-2">
+                                        {/*onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(addRequestCallback) : addRequestCallback}*/}
                                         Request to add a song
                                     </Button>
                                     <br />
-                                    <Button variant="outline-danger" className="museo-300 mb-2"
-                                            onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(removeRequestCallback) : removeRequestCallback}>
+                                    <Button variant="outline-danger" className="museo-300 mb-2">
+                                        {/*onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(removeRequestCallback) : removeRequestCallback}*/}
                                         Request to remove a song
                                     </Button>
                                     <Link to={`/playlist/${playlist.id}/requests`}>
