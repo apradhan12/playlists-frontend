@@ -1,4 +1,4 @@
-import {Playlist, Song, User} from "../types";
+import {Playlist, DummySong, User} from "../types";
 
 export interface PlaylistMap {
     [key: string]: Playlist;
@@ -52,7 +52,7 @@ export const userMap: UserMap = {
 }
 
 interface SongMap {
-    [key: string]: Song;
+    [key: string]: DummySong;
 }
 
 export const songMap: SongMap = {

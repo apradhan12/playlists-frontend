@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
+import React, {Component, SetStateAction} from 'react';
 import { Alert, Button, Col, Container, Form, FormControl, Modal, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import {convertDate, secondsToMinutesString} from "../../common/utils";
+import {addSongs, convertDate, secondsToMinutesString} from "../../common/utils";
 import "./style.css";
 import { ChangeEvent } from 'react';
 import axios from "axios";
+import {Song} from "../../common/types";
 
 interface RequestsTableProps {
     requests: SongRequest[];
@@ -94,7 +95,7 @@ interface State {
 
     playlist?: Playlist;
     owner?: User;
-    // songs?: Song[];
+    songs: Song[];
 
     areYouAdmin?: boolean;
     addRequests?: SongRequest[];
@@ -128,14 +129,6 @@ interface User {
     [otherOptions: string]: any;
 }
 
-interface Song {
-    id: string;
-    name: string;
-    artist: string;
-    album: string;
-    duration: number;
-}
-
 interface LocationState {
     showAddSong?: boolean;
     showRemoveSong?: boolean;
@@ -165,6 +158,7 @@ export default class RequestsPage extends React.Component<Props, State> {
             recentRemoveSongRequest: false,
             playlist: undefined,
             owner: undefined,
+            songs: [],
             results: []
         }
         this.toggleAddSong = this.toggleAddSong.bind(this);
@@ -299,6 +293,21 @@ export default class RequestsPage extends React.Component<Props, State> {
                         displayName: data.owner.display_name
                     }
                 });
+
+                this.setState({songs: []});
+                // todo: get rid of this
+                const setSongs = (nextSongsStateAction: SetStateAction<Song[]>) => {
+                    if (Array.isArray(nextSongsStateAction)) {
+                        this.setState({
+                            songs: nextSongsStateAction
+                        });
+                    } else {
+                        this.setState((prevState: State) => ({
+                            songs: nextSongsStateAction(prevState.songs)
+                        }));
+                    }
+                }
+                addSongs(setSongs, accessToken, data.tracks);
             });
 
             axios.get(`http://localhost:8888/playlists/${this.props.match.params.playlistId}/requests`, {
@@ -377,6 +386,20 @@ export default class RequestsPage extends React.Component<Props, State> {
         const finishRequestingSongRemovals = () => {
             // todo
             if (this.state.playlist !== undefined) {
+                axios({
+                    method: "post",
+                    url: `http://localhost:8888/playlists/${this.props.match.params.playlistId}/requests`,
+                    data: {
+                        songsToAdd: [],
+                        songsToRemove: this.state.removeSongIds
+                    },
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("sp-accessToken")}`
+                    }
+                }).then(response => {
+                    console.log("success");
+                    console.log(response);
+                });
                 // this.state.removeSongIds.forEach(element => {
                 //     this.state.playlist.removeRequests.push({id: `r${this.state.playlist.removeRequests.length + 1}`, song: songMap[element], usersVoted: ["hci2021"]});
                 // });
@@ -556,12 +579,12 @@ export default class RequestsPage extends React.Component<Props, State> {
                                 </tr>
                             </thead>
                             <tbody>
-                                { // todo: replace [] with list of songs retrieved from API
-                                    Array.from([].entries()).map(([i, song]: [number, any]) => (
+                                {
+                                    Array.from(this.state.songs.entries()).map(([i, song]: [number, any]) => (
                                         this.state.removeSongIds.includes(song.id) ? (
                                             <tr key={song.id}>
                                                 <td colSpan={Object.keys(REMOVE_REQUEST_TH_LABELS).length}>
-                                                    You requested to remove {song.title}.&nbsp;
+                                                    You requested to remove {song.name}.&nbsp;
                                                 <Button
                                                         variant="outline-secondary"
                                                         onClick={() => this.setState(prevState => ({ removeSongIds: prevState.removeSongIds.filter(id => id !== song.id) }))}
@@ -573,7 +596,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                                         ) : (
                                                 <tr key={song.id}>
                                                     <td>{i + 1}</td>
-                                                    <td>{song.title}</td>
+                                                    <td>{song.name}</td>
                                                     <td>{song.artist}</td>
                                                     <td>{song.album}</td>
                                                     <td>2021-03-30</td>

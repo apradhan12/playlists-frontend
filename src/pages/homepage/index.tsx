@@ -124,24 +124,29 @@ class Homepage extends React.Component<Props, State> {
                         {/*<PlaylistSearchBar placeholder="Search for playlists..." dark={true}/>*/}
                     </Col>
                 </Row>
-                <Row>
-                    <Col>
-                        <h3 className="museo-display-light mb-1">Playlists you own</h3>
-                        <hr style={{border: "1px solid lightgrey"}} />
-                    </Col>
-                </Row>
-                <Row>
-                    <PlaylistsDisplay playlists={this.state.playlistsYouOwn} />
-                </Row>
-                <Row>
-                    <Col>
-                        <h3 className="museo-display-light mb-1 mt-3">Playlists you follow</h3>
-                        <hr style={{border: "1px solid lightgrey"}} />
-                    </Col>
-                </Row>
-                <Row>
-                    <PlaylistsDisplay playlists={this.state.playlistsYouFollow} />
-                </Row>
+                {
+                    this.state.playlists && <>
+                        <Row>
+                            <Col>
+                                <h3 className="museo-display-light mb-1">Playlists you own</h3>
+                                <hr style={{border: "1px solid lightgrey"}} />
+                            </Col>
+                        </Row>
+                        <Row>
+                            <PlaylistsDisplay playlists={this.state.playlistsYouOwn} />
+                        </Row>
+                        <Row>
+                            <Col>
+                                <h3 className="museo-display-light mb-1 mt-3">Playlists you follow</h3>
+                                <hr style={{border: "1px solid lightgrey"}} />
+                            </Col>
+                        </Row>
+                        <Row>
+                            <PlaylistsDisplay playlists={this.state.playlistsYouFollow} />
+                        </Row>
+                    </>
+                }
+
 
                 {/*<Row>*/}
                 {/*    <Col xs={12}>*/}

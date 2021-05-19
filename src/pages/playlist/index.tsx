@@ -1,9 +1,10 @@
 import React, {useEffect} from 'react';
 import {Button, Col, Container, Row, Table, Image} from "react-bootstrap";
-import {convertDate, secondsToHoursString, secondsToMinutesString, sum} from "../../common/utils";
+import {addSongs, convertDate, secondsToHoursString, secondsToMinutesString, sum} from "../../common/utils";
 import {Link} from "react-router-dom";
 import {useHistory} from "react-router";
 import axios from "axios";
+import {Song} from "../../common/types";
 
 interface Props {
     match: {
@@ -30,15 +31,6 @@ interface User {
     userId: string; // unique
     displayName: string;
     [otherOptions: string]: any;
-}
-
-interface Song {
-    id: string;
-    title: string;
-    artist: string;
-    album: string;
-    duration: number;
-    addedAt?: string; // todo: make this not optional
 }
 
 export default function PlaylistPage(props: Props) {
@@ -71,35 +63,8 @@ export default function PlaylistPage(props: Props) {
                     displayName: data.owner.display_name
                 });
 
-                function getSongsFromTracks(tracks: any) {
-                    return tracks.items.map((item: any) => ({
-                        id: item.track.id,
-                        title: item.track.name,
-                        artist: item.track.artists.map((artist: any) => artist.name).join(", "),
-                        album: item.track.album.name,
-                        duration: Math.floor(item.track.duration_ms / 1000),
-                        addedAt: item.added_at
-                    }));
-                    // TODO: use milliseconds for duration (more accurate)
-                }
-
-                function addSongs(tracks: any) {
-                    setSongs(prevSongs => prevSongs.concat(getSongsFromTracks(tracks)));
-                    if (tracks.total > tracks.limit + tracks.offset) {
-                        console.log(`Querying ${tracks.next}`);
-                        axios.get(tracks.next, {
-                            headers: {
-                                'Authorization': 'Bearer ' + accessToken
-                            }
-                        }).then(response => {
-                            const newTracks = response.data;
-                            // console.log(JSON.stringify(newTracks));
-                            addSongs(newTracks);
-                        });
-                    }
-                }
                 setSongs([]);
-                addSongs(data.tracks);
+                addSongs(setSongs, accessToken, data.tracks);
             });
         }
         // const playlist = playlistMap[props.match.params.playlistId];
@@ -203,7 +168,7 @@ export default function PlaylistPage(props: Props) {
                             Array.from(songs.entries()).map(([i, song]) => (
                                 <tr key={i}>
                                     <td>{i + 1}</td>
-                                    <td>{song.title}</td>
+                                    <td>{song.name}</td>
                                     <td>{song.artist}</td>
                                     <td>{song.album}</td>
                                     <td>{convertDate(song.addedAt)}</td>

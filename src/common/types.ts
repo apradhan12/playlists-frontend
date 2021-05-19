@@ -19,7 +19,7 @@ export interface Playlist {
     removeRequests: SongRequest[];
 }
 
-export interface Song {
+export interface DummySong {
     id: string;
     title: string;
     artist: string;
@@ -29,6 +29,15 @@ export interface Song {
 
 export interface SongRequest {
     id: string;
-    song: Song;
+    song: DummySong;
     usersVoted: string[]; // array of userIds
+}
+
+export interface Song {
+    id: string;
+    name: string;
+    artist: string;
+    album: string;
+    duration: number;
+    addedAt?: string; // todo: make this not optional
 }
