@@ -29,8 +29,8 @@ class RequestsTable extends Component<RequestsTableProps> {
                         <th className="customHeader-2">Album</th>
                         <th className="customHeader-1">Date Added</th>
                         <th className="customHeader-1">Duration</th>
-                        <th className="customHeader-1">Votes</th>
-                        <th className="customHeader-2">Actions</th>
+                        {/*<th className="customHeader-1">Votes</th>*/}
+                        {/*<th className="customHeader-2">Actions</th>*/}
                     </tr>
                 </thead>
                 <tbody>
@@ -43,25 +43,26 @@ class RequestsTable extends Component<RequestsTableProps> {
                                 <td>{request.album}</td>
                                 <td>{convertDate(request.dateAdded)}</td>
                                 <td>{secondsToMinutesString(Math.floor(request.duration / 1000))}</td>
-                                <td>{request.numVotes}</td>
-                                <td>
-                                    { // onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }
-                                        this.props.areYouAdmin ? <Button variant="primary"
-                                                                         onClick={this.props.handleAcceptRequest(request.requestId)}>Accept
-                                                Request</Button> :
-                                            (request.hasYourVote ?
-                                                <Button variant="outline-secondary"
-                                                        onClick={this.props.removeVote(request.requestId)}>
-                                                    Remove Vote for Request
-                                                </Button> :
-                                                <Button variant="outline-secondary">
-                                                    Vote for Request
-                                                </Button>)
-                                    }
-                                </td>
+                                {/*<td>{request.numVotes}</td>*/}
+                                {/*<td>*/}
+                                {/*    { // onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }*/}
+                                {/*        this.props.areYouAdmin ? <Button variant="primary"*/}
+                                {/*                                         onClick={this.props.handleAcceptRequest(request.requestId)}>Accept*/}
+                                {/*                Request</Button> :*/}
+                                {/*            (request.hasYourVote ?*/}
+                                {/*                <Button variant="outline-secondary"*/}
+                                {/*                        onClick={this.props.removeVote(request.requestId)}>*/}
+                                {/*                    Remove Vote for Request*/}
+                                {/*                </Button> :*/}
+                                {/*                <Button variant="outline-secondary">*/}
+                                {/*                    Vote for Request*/}
+                                {/*                </Button>)*/}
+                                {/*    }*/}
+                                {/*</td>*/}
                             </tr>
                         ))
                     }
+                    {this.props.requests.length === 0 && <tr><td colSpan={6}>There are currently no requests. Why not make one?</td></tr>}
                 </tbody>
             </Table>
         );
@@ -403,20 +404,27 @@ export default class RequestsPage extends React.Component<Props, State> {
                         {
                             this.state.playlist && this.state.owner && <>
                                 Playlist: <Link
-                                to={`/playlist/${this.props.match.params.playlistId}`}>{this.state.playlist.title}</Link> by <Link
-                                to={`/user/${this.state.owner.userId}`}>{this.state.owner.displayName}</Link>
+                                to={`/playlist/${this.props.match.params.playlistId}`}>{this.state.playlist.title}</Link> by&nbsp;
+                                {/*<Link to={`/user/${this.state.owner.userId}`}>*/}
+                                    {this.state.owner.displayName}
+                                {/*</Link>*/}
                             </>
                         }
                     </Col>
                     <Col xs={4} className="text-right">
-                        {this.state.owner && this.state.owner.userId !== this.props.loggedInUserId && (
+                        {/*this.state.owner && this.state.owner.userId !== this.props.loggedInUserId &&*/}
+                        {(
                             <div>
-                                <Button variant="outline-primary" className="museo-300 mb-2">
+                                <Button variant="outline-primary" className="museo-300 mb-2"
+                                        onClick={this.toggleAddSong}
+                                >
                                     {/*onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(addRequestCallback) : this.toggleAddSong}*/}
                                     Request to add a song
                                 </Button>
                                 <br />
-                                <Button variant="outline-danger" className="museo-300 mb-2">
+                                <Button variant="outline-danger" className="museo-300 mb-2"
+                                        onClick={this.toggleRemoveSong}
+                                >
                                     {/*onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(removeRequestCallback) : this.toggleRemoveSong}*/}
                                     Request to remove a song
                                 </Button>
