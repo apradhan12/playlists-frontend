@@ -54,9 +54,9 @@ export default class ManageAdmin extends React.Component<Props, State> {
             <Container className="museo-300">
                 <Row className="my-4">
                     <Col xs={12}>
-                        <Link to={`/playlist/${playlist.id}`}>&#8592; Go back to playlist</Link>
+                        <Link to={`/playlists/${playlist.id}`}>&#8592; Go back to playlist</Link>
                         <h1 className="museo-display-black">Manage Administrators</h1>
-                        <p>Playlist: <Link to={`/playlist/${playlist.id}`}>{playlist.title}</Link> by <Link to={`/user/${owner.userId}`}>{owner.displayName}</Link></p>
+                        <p>Playlist: <Link to={`/playlists/${playlist.id}`}>{playlist.title}</Link> by <Link to={`/user/${owner.userId}`}>{owner.displayName}</Link></p>
                     </Col>
                 </Row>
                 <Row className="mb-4">

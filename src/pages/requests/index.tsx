@@ -423,7 +423,7 @@ export default class RequestsPage extends React.Component<Props, State> {
             <Container className="museo-300">
                 <Row className="mt-4">
                     <Col xs={12}>
-                        <Link to={`/playlist/${this.props.match.params.playlistId}`}>&#8592; Go back to playlist</Link>
+                        <Link to={`/playlists/${this.props.match.params.playlistId}`}>&#8592; Go back to playlist</Link>
                     </Col>
                 </Row>
                 <Row className="mb-4">
@@ -432,8 +432,8 @@ export default class RequestsPage extends React.Component<Props, State> {
                         {
                             this.state.playlist && this.state.owner && <>
                                 Playlist: <Link
-                                to={`/playlist/${this.props.match.params.playlistId}`}>{this.state.playlist.title}</Link> by&nbsp;
-                                {/*<Link to={`/user/${this.state.owner.userId}`}>*/}
+                                to={`/playlists/${this.props.match.params.playlistId}`}>{this.state.playlist.title}</Link> by&nbsp;
+                                {/*<Link to={`/users/${this.state.owner.userId}`}>*/}
                                     {this.state.owner.displayName}
                                 {/*</Link>*/}
                             </>

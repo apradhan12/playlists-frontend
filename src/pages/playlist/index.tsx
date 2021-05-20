@@ -96,7 +96,7 @@ export default function PlaylistPage(props: Props) {
                     <h1 className="museo-display-black">{playlist ? playlist.title : ""}</h1>
                     {
                         owner && <p className="museo-300 mb-0">Created by&nbsp;
-                            {/*<Link to={`/user/${owner.userId}`}>*/}
+                            {/*<Link to={`/users/${owner.userId}`}>*/}
                                 {owner.displayName}
                             {/*</Link>*/}
                         </p>
@@ -121,10 +121,10 @@ export default function PlaylistPage(props: Props) {
                             {
                             //     (owner.userId === props.loggedInUserId) ? (
                             //     <div>
-                            //         <Link to={`/playlist/${playlist.id}/requests`}>
+                            //         <Link to={`/playlists/${playlist.id}/requests`}>
                             //             <Button variant="primary" className="museo-300 mb-2">Manage Song Requests</Button><br />
                             //         </Link>
-                            //         <Link to={`/playlist/${playlist.id}/admins`}>
+                            //         <Link to={`/playlists/${playlist.id}/administrators`}>
                             //             <Button variant="outline-secondary" className="museo-300 mb-2">Manage Administrators</Button><br />
                             //         </Link>
                             //     </div>
@@ -140,7 +140,7 @@ export default function PlaylistPage(props: Props) {
                                     {/*    /!*onClick={props.loggedInUserId === undefined ? props.toggleLoginModal(removeRequestCallback) : removeRequestCallback}*!/*/}
                                     {/*    Request to remove a song*/}
                                     {/*</Button>*/}
-                                    <Link to={`/playlist/${playlist.id}/requests`}>
+                                    <Link to={`/playlists/${playlist.id}/requests`}>
                                         <Button variant="outline-primary" className="museo-300 mb-2">View song requests</Button><br />
                                     </Link>
                                     {/*<p className="museo-300 mb-2">If you're an admin of this playlist, log in to manage song requests.</p>*/}

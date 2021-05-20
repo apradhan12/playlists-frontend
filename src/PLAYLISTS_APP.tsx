@@ -88,7 +88,7 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
                         {/* In order to access this playlist ID from the pages that need it, you need to use props.match.params.<VARIABLE_NAME> in that component */}
 
                         {/*@ts-ignore */}
-                        <Route path="/playlist/:playlistId" component={({ match }) =>
+                        <Route path="/playlists/:playlistId" component={({ match }) =>
                                    <PlaylistPage loggedInUserId={this.state.loggedInUser ? this.state.loggedInUser.userId : null} match={match}
                                                  appAccessToken={this.state.appAccessToken}
                                    />
@@ -96,7 +96,7 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
                                exact
                         />
                         {/*@ts-ignore */}
-                        <Route path="/playlist/:playlistId/requests" component={({ match, location, history }) =>
+                        <Route path="/playlists/:playlistId/requests" component={({ match, location, history }) =>
                                    <RequestsPage loggedInUserId={this.state.loggedInUser ? this.state.loggedInUser.userId : null}
                                                  appAccessToken={this.state.appAccessToken}
                                                  match={match}
@@ -107,10 +107,10 @@ class PLAYLISTS_APP extends React.Component<{}, State> {
                         />
 
                         {/* Route to User profile page */}
-                        <Route path="/user/:userId" component={UserProfile} exact/>
+                        <Route path="/users/:userId" component={UserProfile} exact/>
 
                         {/* Route to Manage admins page */}
-                        <Route path="/playlist/:playlistId/admins" component={ManageAdmin} exact/>
+                        <Route path="/playlists/:playlistId/administrators" component={ManageAdmin} exact/>
 
                         <Route path="/callback" component={Callback} exact />
                     </Router>

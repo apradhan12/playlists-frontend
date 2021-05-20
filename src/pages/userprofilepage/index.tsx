@@ -46,7 +46,7 @@ export default class UserProfile extends React.Component<Props> {
                                     .map(([_, playlist]) => {
                                         return (
                                             <tr key={playlist.id}>
-                                                <td><Link to={`/playlist/${playlist.id}`}>{playlist.title}</Link></td>
+                                                <td><Link to={`/playlists/${playlist.id}`}>{playlist.title}</Link></td>
                                                 <td>2021-03-30</td>
                                                 <td>{playlist.songIds.length}</td>
                                                 <td>9 min</td>
