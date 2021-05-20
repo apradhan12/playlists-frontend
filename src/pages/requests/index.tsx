@@ -10,28 +10,30 @@ import {Song} from "../../common/types";
 interface RequestsTableProps {
     requests: SongRequest[];
     adminPermissions: boolean;
-    handleAcceptRequest: (requestId: number) => () => void;
+    handleUpdateRequestStatus: (requestId: number, isApproved: boolean) => () => void;
     removeVote: (requestId: number) => () => void;
     addVote: (requestId: number) => () => void;
     loggedInUserId: string | null;
-
-    areYouAdmin?: boolean;
 }
 
 class RequestsTable extends Component<RequestsTableProps> {
     render() {
+        const headers = [
+            ["#", 1],
+            ["Title", 2],
+            ["Artist", 2],
+            ["Album", 2],
+            ["Date Added", 1],
+            ["Duration", 1]
+        ];
+        if (this.props.adminPermissions) {
+            headers.push(["Actions", 2]);
+        }
         return (
             <Table striped bordered hover>
                 <thead>
                     <tr>
-                        <th className="customHeader-1">#</th>
-                        <th className="customHeader-2">Title</th>
-                        <th className="customHeader-2">Artist</th>
-                        <th className="customHeader-2">Album</th>
-                        <th className="customHeader-1">Date Added</th>
-                        <th className="customHeader-1">Duration</th>
-                        {/*<th className="customHeader-1">Votes</th>*/}
-                        {/*<th className="customHeader-2">Actions</th>*/}
+                        {headers.map(header => <th className={`customHeader-${header[1]}`}>{header[0]}</th>)}
                     </tr>
                 </thead>
                 <tbody>
@@ -45,25 +47,34 @@ class RequestsTable extends Component<RequestsTableProps> {
                                 <td>{convertDate(request.dateAdded)}</td>
                                 <td>{secondsToMinutesString(Math.floor(request.duration / 1000))}</td>
                                 {/*<td>{request.numVotes}</td>*/}
-                                {/*<td>*/}
-                                {/*    { // onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }*/}
-                                {/*        this.props.areYouAdmin ? <Button variant="primary"*/}
-                                {/*                                         onClick={this.props.handleAcceptRequest(request.requestId)}>Accept*/}
-                                {/*                Request</Button> :*/}
-                                {/*            (request.hasYourVote ?*/}
-                                {/*                <Button variant="outline-secondary"*/}
-                                {/*                        onClick={this.props.removeVote(request.requestId)}>*/}
-                                {/*                    Remove Vote for Request*/}
-                                {/*                </Button> :*/}
-                                {/*                <Button variant="outline-secondary">*/}
-                                {/*                    Vote for Request*/}
-                                {/*                </Button>)*/}
-                                {/*    }*/}
-                                {/*</td>*/}
+                                {this.props.adminPermissions &&
+                                <td>
+                                    { // onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }
+                                        this.props.adminPermissions ? <>
+                                                <Button variant="primary"
+                                                        onClick={this.props.handleUpdateRequestStatus(request.requestId, true)}>
+                                                    Accept Request
+                                                </Button>
+                                                <Button variant="danger"
+                                                        onClick={this.props.handleUpdateRequestStatus(request.requestId, false)}>
+                                                    Reject Request
+                                                </Button>
+                                            </> :
+                                            (request.hasYourVote ?
+                                                <Button variant="outline-secondary"
+                                                        onClick={this.props.removeVote(request.requestId)}>
+                                                    Remove Vote for Request
+                                                </Button> :
+                                                <Button variant="outline-secondary">
+                                                    Vote for Request
+                                                </Button>)
+                                    }
+                                </td>
+                                }
                             </tr>
                         ))
                     }
-                    {this.props.requests.length === 0 && <tr><td colSpan={6}>There are currently no requests. Why not make one?</td></tr>}
+                    {this.props.requests.length === 0 && <tr><td colSpan={headers.length}>There are currently no requests.{!this.props.adminPermissions && " Why not make one?"}</td></tr>}
                 </tbody>
             </Table>
         );
@@ -121,6 +132,7 @@ export interface Playlist {
     title: string;
     pictureURL: string;
     description: string;
+    ownerId: string;
     [otherOptions: string]: any;
 }
 
@@ -165,8 +177,7 @@ export default class RequestsPage extends React.Component<Props, State> {
         this.toggleAddSong = this.toggleAddSong.bind(this);
         this.toggleRemoveSong = this.toggleRemoveSong.bind(this);
         this.updateSearchQuery = this.updateSearchQuery.bind(this);
-        this.handleAcceptAddRequest = this.handleAcceptAddRequest.bind(this);
-        this.handleAcceptRemoveRequest = this.handleAcceptRemoveRequest.bind(this);
+        this.handleUpdateRequestStatus = this.handleUpdateRequestStatus.bind(this);
         this.removeVote = this.removeVote.bind(this);
         this.addVote = this.addVote.bind(this);
         this.populateRequests = this.populateRequests.bind(this);
@@ -245,27 +256,20 @@ export default class RequestsPage extends React.Component<Props, State> {
         });
     }
 
-    handleAcceptAddRequest(requestId: number) {
+    handleUpdateRequestStatus(requestId: number, isApproved: boolean) {
         return () => {
-            // todo: do some db logic
-            // let playlist: Playlist = playlistMap[this.props.match.params.playlistId];
-            // playlist.addRequests = playlist.addRequests.filter((request: SongRequest) => request.requestId !== requestId);
-            // playlist.songIds = playlist.songIds.concat(songId);
-            //
-            // playlistMap[this.props.match.params.playlistId] = playlist;
-            // this.forceUpdate();
-        }
-    }
-
-    handleAcceptRemoveRequest(requestId: number) {
-        return () => {
-            // todo: do some db logic
-            // let playlist: Playlist = playlistMap[this.props.match.params.playlistId];
-            // playlist.removeRequests = playlist.removeRequests.filter((request) => request.id !== requestId);
-            // playlist.songIds = playlist.songIds.filter((id) => id !== songId);
-            //
-            // playlistMap[this.props.match.params.playlistId] = playlist;
-            // this.forceUpdate();
+            axios({
+                method: "PUT",
+                url: `http://localhost:8888/playlists/${this.props.match.params.playlistId}/requests/${requestId}`,
+                data: {
+                    status: isApproved ? "approved" : "rejected"
+                },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("sp-accessToken")}`
+                }
+            }).then(response => {
+                this.populateRequests(localStorage.getItem("sp-accessToken")!!);
+            })
         }
     }
 
@@ -312,6 +316,7 @@ export default class RequestsPage extends React.Component<Props, State> {
                         title: data.name,
                         pictureURL: data.images[0].url,
                         description: data.description,
+                        ownerId: data.owner.id,
                         isExternal: true
                     }
                 });
@@ -435,8 +440,8 @@ export default class RequestsPage extends React.Component<Props, State> {
                         }
                     </Col>
                     <Col xs={4} className="text-right">
-                        {/*this.state.owner && this.state.owner.userId !== this.props.loggedInUserId &&*/}
-                        {(
+                        {this.state.owner && this.state.owner.userId !== this.props.loggedInUserId &&
+                        (
                             <div>
                                 <Button variant="outline-primary" className="museo-300 mb-2"
                                         onClick={this.toggleAddSong}
@@ -461,8 +466,8 @@ export default class RequestsPage extends React.Component<Props, State> {
                         <Alert variant="success" show={this.state.recentAddSongRequest}>
                             Your request to add a song from the playlist was made successfully.
                         </Alert>
-                        <RequestsTable handleAcceptRequest={this.handleAcceptAddRequest}
-                                       adminPermissions={this.state.areYouAdmin || false}
+                        <RequestsTable handleUpdateRequestStatus={this.handleUpdateRequestStatus}
+                                       adminPermissions={this.state.areYouAdmin || (this.state.playlist && this.props.loggedInUserId === this.state.playlist.ownerId) || false}
                                        requests={this.state.addRequests || []}
                                        removeVote={this.removeVote(true)}
                                        addVote={this.addVote(true)}
@@ -476,8 +481,8 @@ export default class RequestsPage extends React.Component<Props, State> {
                         <Alert variant="success" show={this.state.recentRemoveSongRequest}>
                             Your request to remove a song from the playlist was made successfully.
                         </Alert>
-                        <RequestsTable handleAcceptRequest={this.handleAcceptRemoveRequest}
-                                       adminPermissions={this.state.areYouAdmin || false}
+                        <RequestsTable handleUpdateRequestStatus={this.handleUpdateRequestStatus}
+                                       adminPermissions={this.state.areYouAdmin || (this.state.playlist && this.props.loggedInUserId === this.state.playlist.ownerId) || false}
                                        requests={this.state.removeRequests || []}
                                        removeVote={this.removeVote(false)}
                                        addVote={this.addVote(false)}
