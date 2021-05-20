@@ -24,11 +24,10 @@ class RequestsTable extends Component<RequestsTableProps> {
             ["Artist", 2],
             ["Album", 2],
             ["Date Added", 1],
-            ["Duration", 1]
+            ["Duration", 1],
+            ["Votes", 1],
+            ["Actions", 2]
         ];
-        if (this.props.adminPermissions) {
-            headers.push(["Actions", 2]);
-        }
         return (
             <Table striped bordered hover>
                 <thead>
@@ -46,8 +45,7 @@ class RequestsTable extends Component<RequestsTableProps> {
                                 <td>{request.album}</td>
                                 <td>{convertDate(request.dateAdded)}</td>
                                 <td>{secondsToMinutesString(Math.floor(request.duration / 1000))}</td>
-                                {/*<td>{request.numVotes}</td>*/}
-                                {this.props.adminPermissions &&
+                                <td>{request.numVotes}</td>
                                 <td>
                                     { // onClick={this.props.loggedInUserId === undefined ? this.props.toggleLoginModal(this.props.addVote(request.requestId)) : this.props.addVote(request.requestId) }
                                         this.props.adminPermissions ? <>
@@ -65,12 +63,11 @@ class RequestsTable extends Component<RequestsTableProps> {
                                                         onClick={this.props.removeVote(request.requestId)}>
                                                     Remove Vote for Request
                                                 </Button> :
-                                                <Button variant="outline-secondary">
+                                                <Button variant="outline-secondary" onClick={this.props.addVote(request.requestId)}>
                                                     Vote for Request
                                                 </Button>)
                                     }
                                 </td>
-                                }
                             </tr>
                         ))
                     }
@@ -191,42 +188,32 @@ export default class RequestsPage extends React.Component<Props, State> {
         this.setState(prevState => ({ removeSongIds: [], showRemoveSong: !prevState.showRemoveSong }));
     }
 
-    removeVote(isAddRequest: boolean) {
-        return (requestId: number) => () => {
-            // todo: db logic
-            // if (this.props.loggedInUserId !== undefined) {
-            //     let requestList;
-            //     if (isAddRequest) {
-            //         requestList = playlistMap[this.props.match.params.playlistId].addRequests;
-            //     } else {
-            //         requestList = playlistMap[this.props.match.params.playlistId].removeRequests;
-            //     }
-            //     const request = requestList.find(request => request.id === requestId);
-            //     if (request !== undefined) {
-            //         request.usersVoted = request.usersVoted.filter(user => user !== "hci2021");
-            //         this.forceUpdate();
-            //     }
-            // }
+    addVote(requestId: number) {
+        return () => {
+            axios({
+                method: "POST",
+                url: `http://localhost:8888/playlists/${this.props.match.params.playlistId}/requests/${requestId}/vote`,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("sp-accessToken")}`
+                }
+            }).then(response => {
+                this.populateRequests(localStorage.getItem("sp-accessToken")!!);
+            });
         };
     }
 
-    addVote(isAddRequest: boolean) {
-        return (requestId: number) => () => {
-            // todo: db logic
-            // if (this.props.loggedInUserId !== undefined) {
-            //     let requestList;
-            //     if (isAddRequest) {
-            //         requestList = playlistMap[this.props.match.params.playlistId].addRequests;
-            //     } else {
-            //         requestList = playlistMap[this.props.match.params.playlistId].removeRequests;
-            //     }
-            //     const request = requestList.find(request => request.id === requestId);
-            //     if (request !== undefined && !request.usersVoted.includes("hci2021")) {
-            //         request.usersVoted.push("hci2021");
-            //         this.forceUpdate();
-            //     }
-            // }
-        }
+    removeVote(requestId: number) {
+        return () => {
+            axios({
+                method: "DELETE",
+                url: `http://localhost:8888/playlists/${this.props.match.params.playlistId}/requests/${requestId}/vote`,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("sp-accessToken")}`
+                }
+            }).then(response => {
+                this.populateRequests(localStorage.getItem("sp-accessToken")!!);
+            });
+        };
     }
 
     updateSearchQuery(event: ChangeEvent<HTMLInputElement>) {
@@ -469,8 +456,8 @@ export default class RequestsPage extends React.Component<Props, State> {
                         <RequestsTable handleUpdateRequestStatus={this.handleUpdateRequestStatus}
                                        adminPermissions={this.state.areYouAdmin || (this.state.playlist && this.props.loggedInUserId === this.state.playlist.ownerId) || false}
                                        requests={this.state.addRequests || []}
-                                       removeVote={this.removeVote(true)}
-                                       addVote={this.addVote(true)}
+                                       removeVote={this.removeVote}
+                                       addVote={this.addVote}
                                        loggedInUserId={this.props.loggedInUserId}
                         />
                     </Col>
@@ -484,8 +471,8 @@ export default class RequestsPage extends React.Component<Props, State> {
                         <RequestsTable handleUpdateRequestStatus={this.handleUpdateRequestStatus}
                                        adminPermissions={this.state.areYouAdmin || (this.state.playlist && this.props.loggedInUserId === this.state.playlist.ownerId) || false}
                                        requests={this.state.removeRequests || []}
-                                       removeVote={this.removeVote(false)}
-                                       addVote={this.addVote(false)}
+                                       removeVote={this.removeVote}
+                                       addVote={this.addVote}
                                        loggedInUserId={this.props.loggedInUserId}
                         />
                     </Col>
