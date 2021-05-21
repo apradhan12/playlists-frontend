@@ -16,6 +16,27 @@ interface RequestsTableProps {
     loggedInUserId: string | null;
 }
 
+const play = (songId: string) => {
+    axios({
+        url: "https://api.spotify.com/v1/me/player/devices",
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("sp-accessToken")}`
+        }
+    }).then(response => {
+        console.log("song");
+        console.log(songId);
+        axios({
+            url: `https://api.spotify.com/v1/me/player/play?device_id=${response.data.devices.filter((device: any) => device.name === "Web Playback SDK Quick Start Player")[0].id}`,
+            method: 'PUT',
+            data: {uris: [`spotify:track:${songId}`]},
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("sp-accessToken")}`
+            }
+        });
+    });
+};
+
 class RequestsTable extends Component<RequestsTableProps> {
     render() {
         const headers = [
@@ -39,7 +60,17 @@ class RequestsTable extends Component<RequestsTableProps> {
                     {
                         Array.from(this.props.requests.entries()).map(([i, request]) => (
                             <tr key={request.requestId}>
-                                <td>{i + 1}</td>
+                                <td>
+                                    {i + 1}<br />
+                                    <Button variant="primary" onClick={
+                                        () => {
+                                            console.log(window);
+                                            // @ts-ignore
+                                            play(request.songId);
+                                        }}>
+                                        Play song
+                                    </Button>
+                                </td>
                                 <td>{request.title}</td>
                                 <td>{request.artist}</td>
                                 <td>{request.album}</td>
@@ -115,6 +146,7 @@ interface State {
 
 interface SongRequest {
     requestId: number;
+    songId: string;
     title: string;
     artist: string;
     album: string;
